@@ -153,6 +153,23 @@
   }
 }
 
+:root {
+  color-scheme: light;
+  --background: oklch(0.985 0.008 286);
+  --foreground: oklch(0.21 0.035 275);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.035 275);
+  --muted: oklch(0.965 0.012 286);
+  --muted-foreground: oklch(0.52 0.035 275);
+  --primary: oklch(0.52 0.23 286);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.95 0.04 286);
+  --accent-foreground: oklch(0.38 0.16 286);
+  --border: oklch(0.91 0.018 286);
+  --input: oklch(0.91 0.018 286);
+  --ring: oklch(0.62 0.19 286);
+}
+
 @keyframes chat-in {
   from { opacity: 0; transform: translateY(10px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
