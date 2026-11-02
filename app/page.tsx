@@ -16,7 +16,6 @@ import {
   Paperclip,
   Send,
   ShieldCheck,
-  Sparkles,
   X,
 } from 'lucide-react'
 
@@ -56,8 +55,8 @@ function ChatHeader({ onClose, onReset }: { onClose: () => void; onReset: () => 
           <span className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-white bg-emerald-500" aria-label="Online" />
         </div>
         <div>
-          <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-slate-900">eehu! Support</h2>
-          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-emerald-600"><span className="size-1.5 rounded-full bg-emerald-500" /> We&apos;re online</p>
+          <h2 className="text-base font-bold tracking-[-0.01em] text-slate-900">eehu! Support</h2>
+          <p className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-emerald-600"><span className="size-1.5 rounded-full bg-emerald-500" /> We&apos;re online</p>
         </div>
       </div>
       <div className="flex items-center gap-1 text-slate-400">
@@ -77,10 +76,10 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <div className={`group flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[82%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
-        <div className={`rounded-2xl px-4 py-3 text-[13px] leading-relaxed ${isUser ? 'rounded-br-md bg-emerald-600 text-white shadow-sm shadow-emerald-200' : 'rounded-bl-md bg-slate-100 text-slate-700'}`}>
+        <div className={`rounded-2xl px-4 py-3 text-[15px] font-medium leading-relaxed ${isUser ? 'rounded-br-md bg-emerald-600 text-white shadow-sm shadow-emerald-200' : 'rounded-bl-md bg-slate-100 text-slate-700'}`}>
           {message.text}
         </div>
-        <div className={`mt-1.5 flex items-center gap-1.5 px-1 text-[10px] text-slate-400 ${isUser ? 'flex-row-reverse' : ''}`}>
+        <div className={`mt-1.5 flex items-center gap-1.5 px-1 text-xs font-medium text-slate-400 ${isUser ? 'flex-row-reverse' : ''}`}>
           <span>{message.time}</span>
           {message.status === 'read' && <CheckCheck className="size-3 text-emerald-500" aria-label="Read" />}
         </div>
@@ -90,7 +89,7 @@ function MessageBubble({ message }: { message: Message }) {
 }
 
 function TypingIndicator() {
-  return <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-slate-100 px-4 py-3" aria-label="eehu! is typing"><span className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" /><span className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" /><span className="size-1.5 animate-bounce rounded-full bg-slate-400" /></div>
+  return <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-slate-100 px-4 py-3.5" aria-label="eehu! is typing"><span className="size-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" /><span className="size-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" /><span className="size-2 animate-bounce rounded-full bg-slate-400" /></div>
 }
 
 function MessageList({ messages, isTyping }: { messages: Message[]; isTyping: boolean }) {
@@ -98,7 +97,7 @@ function MessageList({ messages, isTyping }: { messages: Message[]; isTyping: bo
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isTyping])
   return (
     <div className="min-h-0 flex-1 overflow-y-auto bg-[#fcfcfd] px-5 py-5">
-      <div className="mb-5 flex items-center gap-3 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400"><span className="h-px flex-1 bg-slate-200" /> Today <span className="h-px flex-1 bg-slate-200" /></div>
+      <div className="mb-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400"><span className="h-px flex-1 bg-slate-200" /> Today <span className="h-px flex-1 bg-slate-200" /></div>
       <div className="space-y-4">{messages.map((message) => <MessageBubble key={message.id} message={message} />)}{isTyping && <div className="flex"><TypingIndicator /></div>}<div ref={bottomRef} /></div>
     </div>
   )
@@ -113,10 +112,10 @@ function MessageInput({ onSend, disabled }: { onSend: (text: string) => void; di
     <footer className="border-t border-slate-200/80 bg-white p-4">
       <div className="flex items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 transition focus-within:border-emerald-300 focus-within:ring-4 focus-within:ring-emerald-500/10">
         <button type="button" className="mb-0.5 rounded-lg p-1.5 text-slate-400 transition hover:bg-white hover:text-emerald-600" aria-label="Attach a file"><Paperclip className="size-4" /></button>
-        <textarea ref={textareaRef} value={text} onChange={(event) => { setText(event.target.value); event.target.style.height = 'auto'; event.target.style.height = `${Math.min(event.target.scrollHeight, 96)}px` }} onKeyDown={onKeyDown} placeholder="Type a message..." rows={1} className="max-h-24 min-h-7 flex-1 resize-none bg-transparent py-1 text-[13px] text-slate-800 outline-none placeholder:text-slate-400" aria-label="Message" />
-        <button type="button" onClick={submit} disabled={!text.trim() || disabled} className="mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400" aria-label="Send message"><Send className="size-3.5" /></button>
+        <textarea ref={textareaRef} value={text} onChange={(event) => { setText(event.target.value); event.target.style.height = 'auto'; event.target.style.height = `${Math.min(event.target.scrollHeight, 96)}px` }} onKeyDown={onKeyDown} placeholder="Type a message..." rows={1} className="max-h-24 min-h-7 flex-1 resize-none bg-transparent py-1 text-[15px] font-medium text-slate-800 outline-none placeholder:text-slate-400" aria-label="Message" />
+        <button type="button" onClick={submit} disabled={!text.trim() || disabled} className="mb-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400" aria-label="Send message"><Send className="size-4" /></button>
       </div>
-      <p className="mt-2 text-center text-[10px] text-slate-400">Powered by <span className="font-medium text-emerald-700">eehu!</span></p>
+      <p className="mt-2 text-center text-xs font-medium text-slate-400">Powered by <span className="font-bold text-emerald-700">eehu!</span></p>
     </footer>
   )
 }
@@ -137,7 +136,7 @@ function ChatWidget() {
   return (
     <>
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.08),transparent_42%)]" />
-      {isOpen && <section className="fixed bottom-24 right-5 z-20 flex h-[min(600px,calc(100vh-7.5rem))] w-[380px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support"><ChatHeader onClose={() => setIsOpen(false)} onReset={resetChat} /><MessageList messages={messages} isTyping={isTyping} /><MessageInput onSend={sendMessage} disabled={isTyping} /></section>}
+      {isOpen && <section className="fixed bottom-24 right-5 z-20 flex h-[min(660px,calc(100vh-7.5rem))] w-[420px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support"><ChatHeader onClose={() => setIsOpen(false)} onReset={resetChat} /><MessageList messages={messages} isTyping={isTyping} /><MessageInput onSend={sendMessage} disabled={isTyping} /></section>}
       <button type="button" onClick={() => setIsOpen((open) => !open)} className={`fixed bottom-5 right-5 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 transition duration-200 hover:scale-105 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 ${isOpen ? 'max-sm:hidden' : ''}`} aria-label={isOpen ? 'Close chat' : 'Open chat'}>{isOpen ? <X className="size-5" /> : <MessageCircle className="size-6" />}<span className="absolute inset-0 -z-10 animate-ping rounded-full bg-emerald-400/40" /></button>
     </>
   )
@@ -145,40 +144,105 @@ function ChatWidget() {
 
 function FeatureCard({ index, title, children }: { index: string; title: string; children: string }) {
   return (
-    <article className="rounded-[1.35rem] border border-slate-200/80 bg-white p-7 shadow-sm shadow-slate-900/[0.04] transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-900/[0.08]">
-      <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">{index}</p>
-      <h3 className="mt-8 text-xl font-bold tracking-[-0.035em] text-slate-950">{title}</h3>
-      <p className="mt-3 text-[15px] leading-7 text-slate-500">{children}</p>
+    <article className="rounded-[1.35rem] border border-white/5 bg-white/5 p-7 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07] hover:shadow-xl hover:shadow-emerald-900/20">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-400">{index}</p>
+      <h3 className="mt-8 text-xl font-extrabold tracking-[-0.035em] text-white">{title}</h3>
+      <p className="mt-3 text-base leading-7 text-slate-400">{children}</p>
     </article>
   )
 }
 
 export default function Page() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#f8f8fb] text-slate-900">
+    <main className="bg-dot-grid min-h-screen overflow-hidden text-white">
+      {/* Radial emerald glow at top */}
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(52,211,153,0.12),transparent_70%)]" />
+
+      {/* Nav */}
       <nav className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-6 lg:px-8">
-        <div className="flex items-center gap-2.5"><BrandMark small /><span className="text-lg font-bold tracking-[-0.04em]">eehu!</span></div>
-        <div className="hidden items-center gap-8 text-sm font-medium text-slate-500 md:flex"><a href="#features" className="transition hover:text-emerald-600">Features</a><a href="#benefits" className="transition hover:text-emerald-600">For businesses</a><a href="#install" className="transition hover:text-emerald-600">Install</a></div>
-        <button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="hidden items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 sm:flex">Try the demo <ArrowRight className="size-4" /></button>
+        <div className="flex items-center gap-1.5"><BrandMark /><span className="font-baloo2 text-3xl font-extrabold text-emerald-400">eehu!</span></div>
+        <div className="hidden items-center gap-8 text-sm font-medium text-slate-400 md:flex">
+          <a href="#features" className="transition hover:text-emerald-400">Features</a>
+          <a href="#benefits" className="transition hover:text-emerald-400">For businesses</a>
+          <a href="#install" className="transition hover:text-emerald-400">Install</a>
+        </div>
+        <button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="hidden items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-400 sm:flex">Try the demo <ArrowRight className="size-4" /></button>
       </nav>
 
+      {/* Hero */}
       <section className="relative mx-auto grid max-w-6xl gap-14 px-6 pb-24 pt-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-8 lg:pb-32 lg:pt-20">
-        <div className="absolute -left-32 top-0 size-96 rounded-full bg-emerald-300/25 blur-3xl" />
+        <div className="absolute -left-32 top-0 size-[500px] rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="relative">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm"><span className="size-1.5 rounded-full bg-emerald-500" /> Support that feels human</div>
-          <h1 className="max-w-2xl text-5xl font-semibold leading-[1.02] tracking-[-0.065em] text-slate-950 sm:text-6xl lg:text-7xl">Turn every website visit into a <span className="text-emerald-600">conversation.</span></h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-500">When a customer gets stuck, eehu! gives them a clear next step before they leave. Add helpful support to your existing site without rebuilding pages or creating another inbox for your team.</p>
-          <div className="mt-8 flex flex-wrap items-center gap-3"><button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-600/25 transition hover:bg-emerald-700">See eehu! in action <ArrowRight className="size-4" /></button><a href="#benefits" className="rounded-full px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-slate-900">Why businesses use it</a></div>
-          <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-xs font-medium text-slate-400"><span className="flex items-center gap-2"><Check className="size-4 text-emerald-500" /> Installs in minutes</span><span className="flex items-center gap-2"><Check className="size-4 text-emerald-500" /> Works with any site</span><span className="flex items-center gap-2"><Check className="size-4 text-emerald-500" /> No code required</span></div>
+          <h1 className="max-w-2xl text-5xl font-extrabold leading-[1.02] tracking-[-0.05em] text-white sm:text-6xl lg:text-7xl">Turn every website visit into a <span className="text-emerald-400">conversation.</span></h1>
+          <p className="mt-7 max-w-xl text-xl leading-9 text-slate-300">When a customer gets stuck, eehu! gives them a clear next step before they leave. Add helpful support to your existing site without rebuilding pages or creating another inbox for your team.</p>
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">See eehu! in action <ArrowRight className="size-4" /></button>
+            <a href="#benefits" className="rounded-full border border-white/10 px-6 py-3.5 text-base font-semibold text-slate-300 transition hover:border-white/20 hover:text-white">Why businesses use it</a>
+          </div>
+          <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate-500">
+            <span className="flex items-center gap-2"><Check className="size-4 text-emerald-400" /> Installs in minutes</span>
+            <span className="flex items-center gap-2"><Check className="size-4 text-emerald-400" /> Works with any site</span>
+            <span className="flex items-center gap-2"><Check className="size-4 text-emerald-400" /> No code required</span>
+          </div>
         </div>
-        <div className="relative min-h-[410px] rounded-[2rem] border border-white/80 bg-gradient-to-br from-emerald-100 via-white to-green-100 p-5 shadow-2xl shadow-emerald-900/10 sm:p-8"><div className="absolute inset-6 rounded-[1.5rem] border border-white/80 bg-white/50" /><div className="relative flex h-full min-h-[360px] flex-col justify-between rounded-2xl border border-slate-200/70 bg-white/75 p-5 shadow-xl shadow-slate-900/5 backdrop-blur-sm sm:p-7"><div><div className="flex items-center justify-between"><div className="flex items-center gap-2 text-xs font-semibold text-slate-400"><span className="size-2 rounded-full bg-emerald-400" /> YOUR WEBSITE</div><div className="flex gap-1.5"><span className="size-2 rounded-full bg-slate-200" /><span className="size-2 rounded-full bg-slate-200" /><span className="size-2 rounded-full bg-slate-200" /></div></div><div className="mt-12 max-w-xs"><div className="h-2 w-16 rounded-full bg-emerald-200" /><div className="mt-4 h-5 w-4/5 rounded-full bg-slate-200" /><div className="mt-3 h-3 w-3/5 rounded-full bg-slate-100" /></div></div><div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-lg shadow-emerald-900/10"><div className="flex items-center gap-3"><BrandMark small /><div><p className="text-xs font-semibold text-slate-900">eehu! Support</p><p className="text-[10px] text-emerald-600">Online now</p></div><span className="ml-auto flex size-7 items-center justify-center rounded-full bg-emerald-600 text-white"><MessageCircle className="size-3.5" /></span></div><p className="mt-4 rounded-xl rounded-bl-sm bg-slate-100 px-3 py-2.5 text-xs leading-5 text-slate-600">Hi! Need help choosing the right plan?</p><div className="mt-3 flex items-center gap-1.5 text-[10px] text-slate-400"><span className="size-1.5 rounded-full bg-slate-300" /><span className="size-1.5 rounded-full bg-slate-300" /><span className="size-1.5 rounded-full bg-slate-300" /></div></div></div></div>
+        <div className="relative min-h-[410px] rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-8">
+          <div className="absolute inset-6 rounded-[1.5rem] border border-white/5 bg-white/5" />
+          <div className="relative flex h-full min-h-[360px] flex-col justify-between rounded-2xl border border-white/10 bg-slate-900/80 p-5 shadow-xl backdrop-blur-sm sm:p-7">
+            <div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-400"><span className="size-2 rounded-full bg-emerald-400" /> YOUR WEBSITE</div>
+                <div className="flex gap-1.5"><span className="size-2 rounded-full bg-slate-700" /><span className="size-2 rounded-full bg-slate-700" /><span className="size-2 rounded-full bg-slate-700" /></div>
+              </div>
+              <div className="mt-12 max-w-xs"><div className="h-2 w-16 rounded-full bg-emerald-500/30" /><div className="mt-4 h-5 w-4/5 rounded-full bg-white/10" /><div className="mt-3 h-3 w-3/5 rounded-full bg-white/5" /></div>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-slate-800 p-4 shadow-lg shadow-black/20">
+              <div className="flex items-center gap-3"><BrandMark small /><div><p className="text-xs font-semibold text-white">eehu! Support</p><p className="text-[10px] text-emerald-400">Online now</p></div><span className="ml-auto flex size-7 items-center justify-center rounded-full bg-emerald-500 text-white"><MessageCircle className="size-3.5" /></span></div>
+              <p className="mt-4 rounded-xl rounded-bl-sm bg-slate-700/60 px-3 py-2.5 text-xs leading-5 text-slate-300">Hi! Need help choosing the right plan?</p>
+              <div className="mt-3 flex items-center gap-1.5 text-[10px] text-slate-500"><span className="size-1.5 rounded-full bg-slate-600" /><span className="size-1.5 rounded-full bg-slate-600" /><span className="size-1.5 rounded-full bg-slate-600" /></div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <section id="features" className="mx-auto max-w-6xl px-6 pb-24 lg:px-8"><div className="mb-10 max-w-xl"><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">One small widget. A bigger business.</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">Your customers get answers. Your team gets time back.</h2></div><div className="grid gap-4 md:grid-cols-3"><FeatureCard index="01 / The rescue" title="Catch the moment someone almost leaves">When a visitor pauses on pricing or setup, eehu! gives them a useful next step instead of another dead end.</FeatureCard><FeatureCard index="02 / The memory" title="Make every handoff feel informed">Your team sees what the customer tried, where they got stuck, and what they need, so nobody asks them to start over.</FeatureCard><FeatureCard index="03 / The signal" title="Turn repeated friction into decisions">Spot the questions your website keeps failing to answer, then fix the page, offer, or process behind them.</FeatureCard></div></section>
+      {/* Features */}
+      <section id="features" className="mx-auto max-w-6xl px-6 pb-24 lg:px-8">
+        <div className="mb-12 max-w-xl">
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">One small widget. A bigger business.</p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">Your customers get answers. Your team gets time back.</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <FeatureCard index="01 / The rescue" title="Catch the moment someone almost leaves">When a visitor pauses on pricing or setup, eehu! gives them a useful next step instead of another dead end.</FeatureCard>
+          <FeatureCard index="02 / The memory" title="Make every handoff feel informed">Your team sees what the customer tried, where they got stuck, and what they need, so nobody asks them to start over.</FeatureCard>
+          <FeatureCard index="03 / The signal" title="Turn repeated friction into decisions">Spot the questions your website keeps failing to answer, then fix the page, offer, or process behind them.</FeatureCard>
+        </div>
+      </section>
 
-      <section id="benefits" className="border-y border-slate-200/70 bg-white/70"><div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[0.8fr_1.2fr] lg:px-8"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">Made for the web you already have</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">A smarter layer on top of your existing website.</h2><p className="mt-5 max-w-md leading-7 text-slate-500">No migration, no redesign, no months-long implementation. Add eehu! to the places your customers already trust.</p></div><div className="grid gap-4 sm:grid-cols-2"><div className="rounded-2xl bg-emerald-50 p-5"><Code2 className="size-5 text-emerald-600" /><h3 className="mt-5 font-semibold">Drop-in setup</h3><p className="mt-2 text-sm leading-6 text-slate-500">One lightweight snippet works across your marketing site, store, or customer portal.</p></div><div className="rounded-2xl bg-green-50 p-5"><ShieldCheck className="size-5 text-green-600" /><h3 className="mt-5 font-semibold">A trusted experience</h3><p className="mt-2 text-sm leading-6 text-slate-500">Keep your brand, your voice, and your customer conversations in one calm place.</p></div><div className="rounded-2xl bg-amber-50 p-5"><Headphones className="size-5 text-amber-600" /><h3 className="mt-5 font-semibold">Always available</h3><p className="mt-2 text-sm leading-6 text-slate-500">Help does not stop when your team signs off. eehu! is ready around the clock.</p></div><div className="rounded-2xl bg-emerald-50 p-5"><BarChart3 className="size-5 text-emerald-600" /><h3 className="mt-5 font-semibold">Built to learn</h3><p className="mt-2 text-sm leading-6 text-slate-500">See what customers ask most and turn real conversations into better decisions.</p></div></div></div></section>
+      {/* Benefits */}
+      <section id="benefits" className="border-y border-white/5 bg-white/[0.03]">
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">Made for the web you already have</p>
+            <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">A smarter layer on top of your existing website.</h2>
+            <p className="mt-5 max-w-md text-lg leading-8 text-slate-400">No migration, no redesign, no months-long implementation. Add eehu! to the places your customers already trust.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-5"><Code2 className="size-5 text-emerald-400" /><h3 className="mt-5 text-base font-bold text-white">Drop-in setup</h3><p className="mt-2 text-sm leading-6 text-slate-400">One lightweight snippet works across your marketing site, store, or customer portal.</p></div>
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-5"><ShieldCheck className="size-5 text-emerald-400" /><h3 className="mt-5 text-base font-bold text-white">A trusted experience</h3><p className="mt-2 text-sm leading-6 text-slate-400">Keep your brand, your voice, and your customer conversations in one calm place.</p></div>
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-5"><Headphones className="size-5 text-emerald-400" /><h3 className="mt-5 text-base font-bold text-white">Always available</h3><p className="mt-2 text-sm leading-6 text-slate-400">Help does not stop when your team signs off. eehu! is ready around the clock.</p></div>
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-5"><BarChart3 className="size-5 text-emerald-400" /><h3 className="mt-5 text-base font-bold text-white">Built to learn</h3><p className="mt-2 text-sm leading-6 text-slate-400">See what customers ask most and turn real conversations into better decisions.</p></div>
+          </div>
+        </div>
+      </section>
 
-      <section id="install" className="mx-auto max-w-6xl px-6 py-20 text-center lg:px-8"><div className="mx-auto max-w-2xl rounded-[2rem] bg-slate-950 px-6 py-14 text-white shadow-2xl shadow-slate-900/15 sm:px-12"><Sparkles className="mx-auto size-6 text-emerald-300" /><h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Give your website a better way to help.</h2><p className="mx-auto mt-4 max-w-lg leading-7 text-slate-300">Try the live chat in the corner, then imagine it working across every page of your business.</p><button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-100">Start a conversation <ArrowRight className="size-4" /></button></div></section>
+      {/* CTA */}
+      <section id="install" className="mx-auto max-w-6xl px-6 py-20 text-center lg:px-8">
+        <div className="mx-auto max-w-2xl rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5 px-6 py-14 shadow-2xl shadow-emerald-900/20 sm:px-12">
+          <h2 className="text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">Give your website a better way to help.</h2>
+          <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-slate-300">Try the live chat in the corner, then imagine it working across every page of your business.</p>
+          <button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">Start a conversation <ArrowRight className="size-4" /></button>
+        </div>
+      </section>
+
       <ChatWidget />
     </main>
   )
