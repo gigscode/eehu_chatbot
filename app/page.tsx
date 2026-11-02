@@ -40,9 +40,16 @@ function BrandMark({ small = false }: { small?: boolean }) {
   return <img src={eehuLogoUrl} alt="eehu!" className={`shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,120,40,0.2)] ${small ? 'size-9' : 'size-12'}`} />
 }
 
-function ChatHeader({ onClose }: { onClose: () => void }) {
+function ChatHeader({ onClose, onReset }: { onClose: () => void; onReset: () => void }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  const copyChatLink = async () => {
+    await navigator.clipboard?.writeText(window.location.href)
+    setIsMenuOpen(false)
+  }
+
   return (
-    <header className="flex items-center justify-between border-b border-slate-200/80 bg-white px-5 py-4">
+    <header className="relative flex items-center justify-between border-b border-slate-200/80 bg-white px-5 py-4">
       <div className="flex items-center gap-3">
         <div className="relative">
           <BrandMark />
@@ -54,8 +61,12 @@ function ChatHeader({ onClose }: { onClose: () => void }) {
         </div>
       </div>
       <div className="flex items-center gap-1 text-slate-400">
-        <button type="button" className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="More options"><Ellipsis className="size-4" /></button>
+        <button type="button" onClick={() => setIsMenuOpen((open) => !open)} className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="More options" aria-expanded={isMenuOpen} aria-haspopup="menu"><Ellipsis className="size-4" /></button>
         <button type="button" onClick={onClose} className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Minimize chat"><Minus className="size-4" /></button>
+        {isMenuOpen && <div role="menu" aria-label="Chat options" className="absolute right-5 top-14 z-30 w-44 rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl shadow-slate-900/10">
+          <button type="button" role="menuitem" onClick={() => { onReset(); setIsMenuOpen(false) }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700">Start a new chat</button>
+          <button type="button" role="menuitem" onClick={copyChatLink} className="w-full rounded-lg px-3 py-2 text-left font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700">Copy chat link</button>
+        </div>}
       </div>
     </header>
   )
@@ -114,6 +125,10 @@ function ChatWidget() {
   const [isOpen, setIsOpen] = useState(true)
   const [messages, setMessages] = useState(initialMessages)
   const [isTyping, setIsTyping] = useState(false)
+  const resetChat = () => {
+    setMessages(initialMessages)
+    setIsTyping(false)
+  }
   const sendMessage = (text: string) => {
     setMessages((current) => [...current, { id: Date.now(), text, sender: 'user', time: 'Now', status: 'sent' }])
     setIsTyping(true)
@@ -122,7 +137,7 @@ function ChatWidget() {
   return (
     <>
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.08),transparent_42%)]" />
-      {isOpen && <section className="fixed bottom-24 right-5 z-20 flex h-[min(600px,calc(100vh-7.5rem))] w-[380px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support"><ChatHeader onClose={() => setIsOpen(false)} /><MessageList messages={messages} isTyping={isTyping} /><MessageInput onSend={sendMessage} disabled={isTyping} /></section>}
+      {isOpen && <section className="fixed bottom-24 right-5 z-20 flex h-[min(600px,calc(100vh-7.5rem))] w-[380px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support"><ChatHeader onClose={() => setIsOpen(false)} onReset={resetChat} /><MessageList messages={messages} isTyping={isTyping} /><MessageInput onSend={sendMessage} disabled={isTyping} /></section>}
       <button type="button" onClick={() => setIsOpen((open) => !open)} className={`fixed bottom-5 right-5 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 transition duration-200 hover:scale-105 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 ${isOpen ? 'max-sm:hidden' : ''}`} aria-label={isOpen ? 'Close chat' : 'Open chat'}>{isOpen ? <X className="size-5" /> : <MessageCircle className="size-6" />}<span className="absolute inset-0 -z-10 animate-ping rounded-full bg-emerald-400/40" /></button>
     </>
   )
