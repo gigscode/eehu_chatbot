@@ -3,25 +3,12 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Luma Support Chat',
-  description: 'A polished, embeddable support chat widget for modern websites.',
+  title: 'eehu! — Customer conversations, built into your website',
+  description: 'eehu! is an enterprise-grade support chat layer for existing websites, helping businesses answer customers and convert more demand.',
   generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Glossy%20Emerald%20Eehu%20Chat%20Icon-zVY8dtZZH3jzLa1wAkGx7Wl4lWcHzW.png',
+    apple: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Glossy%20Emerald%20Eehu%20Chat%20Icon-zVY8dtZZH3jzLa1wAkGx7Wl4lWcHzW.png',
   },
 }
 

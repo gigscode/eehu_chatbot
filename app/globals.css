@@ -161,13 +161,13 @@
   --card-foreground: oklch(0.21 0.035 275);
   --muted: oklch(0.965 0.012 286);
   --muted-foreground: oklch(0.52 0.035 275);
-  --primary: oklch(0.52 0.23 286);
+  --primary: oklch(0.48 0.19 145);
   --primary-foreground: oklch(0.99 0 0);
-  --accent: oklch(0.95 0.04 286);
-  --accent-foreground: oklch(0.38 0.16 286);
-  --border: oklch(0.91 0.018 286);
-  --input: oklch(0.91 0.018 286);
-  --ring: oklch(0.62 0.19 286);
+  --accent: oklch(0.94 0.06 145);
+  --accent-foreground: oklch(0.32 0.13 145);
+  --border: oklch(0.9 0.025 145);
+  --input: oklch(0.9 0.025 145);
+  --ring: oklch(0.6 0.18 145);
 }
 
 @keyframes chat-in {
