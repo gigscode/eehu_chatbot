@@ -34,7 +34,7 @@ const initialMessages: Message[] = [
   { id: 3, text: 'Absolutely. I can help with that. What would you like to know?', sender: 'agent', time: '10:43 AM' },
 ]
 
-const eehuLogoUrl = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Glossy%20Emerald%20Eehu%20Chat%20Icon-zVY8dtZZH3jzLa1wAkGx7Wl4lWcHzW.png'
+const eehuLogoUrl = '/Glossy Emerald Eehu Chat icon.png'
 
 function BrandMark({ small = false }: { small?: boolean }) {
   return <img src={eehuLogoUrl} alt="eehu!" className={`shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,120,40,0.2)] ${small ? 'size-9' : 'size-12'}`} />
