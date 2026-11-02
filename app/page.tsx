@@ -32,7 +32,7 @@ type Message = {
 const initialMessages: Message[] = [
   { id: 1, text: 'Hi there! How can we help you today?', sender: 'agent', time: '10:42 AM' },
   { id: 2, text: 'I have a question about getting started.', sender: 'user', time: '10:43 AM', status: 'read' },
-  { id: 3, text: 'Absolutely — I can help with that. What would you like to know?', sender: 'agent', time: '10:43 AM' },
+  { id: 3, text: 'Absolutely. I can help with that. What would you like to know?', sender: 'agent', time: '10:43 AM' },
 ]
 
 const eehuLogoUrl = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Glossy%20Emerald%20Eehu%20Chat%20Icon-zVY8dtZZH3jzLa1wAkGx7Wl4lWcHzW.png'
@@ -153,7 +153,7 @@ export default function Page() {
         <div className="relative">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm"><span className="size-1.5 rounded-full bg-emerald-500" /> Support that feels human</div>
           <h1 className="max-w-2xl text-5xl font-semibold leading-[1.02] tracking-[-0.065em] text-slate-950 sm:text-6xl lg:text-7xl">Turn every website visit into a <span className="text-emerald-600">conversation.</span></h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-500">eehu! gives your customers instant, friendly help right where they need it — without rebuilding your website or adding another inbox for your team.</p>
+          <p className="mt-6 max-w-xl text-lg leading-8 text-slate-500">When a customer gets stuck, eehu! gives them a clear next step before they leave. Add helpful support to your existing site without rebuilding pages or creating another inbox for your team.</p>
           <div className="mt-8 flex flex-wrap items-center gap-3"><button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-600/25 transition hover:bg-emerald-700">See eehu! in action <ArrowRight className="size-4" /></button><a href="#benefits" className="rounded-full px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-white hover:text-slate-900">Why businesses use it</a></div>
           <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-xs font-medium text-slate-400"><span className="flex items-center gap-2"><Check className="size-4 text-emerald-500" /> Installs in minutes</span><span className="flex items-center gap-2"><Check className="size-4 text-emerald-500" /> Works with any site</span><span className="flex items-center gap-2"><Check className="size-4 text-emerald-500" /> No code required</span></div>
         </div>

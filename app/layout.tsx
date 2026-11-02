@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'eehu! — Customer conversations, built into your website',
+  title: 'eehu!. Customer conversations, built into your website',
   description: 'eehu! is an enterprise-grade support chat layer for existing websites, helping businesses answer customers and convert more demand.',
   generator: 'v0.app',
   icons: {
