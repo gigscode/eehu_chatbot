@@ -7,7 +7,6 @@ import {
   CheckCheck,
   Ellipsis,
   MessageCircle,
-  Minus,
   Paperclip,
   Send,
   X,
@@ -42,20 +41,19 @@ function ChatHeader({ onClose, onReset }: { onClose: () => void; onReset: () => 
   return (
     <header className="relative flex items-center justify-between border-b border-slate-200/80 bg-white px-5 py-4">
       <div className="flex items-center gap-3">
-        <div className="relative">
+        <div className="relative shrink-0">
           <BrandMark />
-          <span className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-white bg-emerald-500" aria-label="Online" />
         </div>
         <div>
-          <h2 className="text-base font-bold tracking-[-0.01em] text-slate-900">eehu! Support</h2>
+          <h2 className="font-baloo2 text-3xl font-extrabold text-emerald-500">eehu!</h2>
           <p className="mt-0.5 flex items-center gap-1.5 text-[13px] font-semibold text-emerald-600"><span className="size-1.5 rounded-full bg-emerald-500" /> We&apos;re online</p>
         </div>
       </div>
-      <div className="flex items-center gap-1 text-slate-400">
-        <button type="button" onClick={() => setIsMenuOpen((o) => !o)} className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="More options" aria-expanded={isMenuOpen} aria-haspopup="menu"><Ellipsis className="size-4" /></button>
-        <button type="button" onClick={onClose} className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Minimize chat"><Minus className="size-4" /></button>
+      <div className="relative flex items-center gap-1 text-slate-400">
+        <button type="button" onClick={() => setIsMenuOpen((o) => !o)} className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="More options" aria-expanded={isMenuOpen} aria-haspopup="menu"><Ellipsis className="size-5" /></button>
+        <button type="button" onClick={onClose} className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Close chat"><X className="size-5" /></button>
         {isMenuOpen && (
-          <div role="menu" aria-label="Chat options" className="absolute right-5 top-14 z-30 w-44 rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl shadow-slate-900/10">
+          <div role="menu" aria-label="Chat options" className="absolute right-0 top-10 z-30 w-44 rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl shadow-slate-900/10">
             <button type="button" role="menuitem" onClick={() => { onReset(); setIsMenuOpen(false) }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700">Start a new chat</button>
             <button type="button" role="menuitem" onClick={copyChatLink} className="w-full rounded-lg px-3 py-2 text-left font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700">Copy chat link</button>
           </div>
@@ -143,13 +141,12 @@ function MessageInput({ onSend, disabled }: { onSend: (text: string) => void; di
           <Send className="size-4" />
         </button>
       </div>
-      <p className="mt-2 text-center text-xs font-medium text-slate-400">Powered by <span className="font-bold text-emerald-700">eehu!</span></p>
+      <p className="mt-2 text-center text-xs font-medium text-slate-400">Powered by <span className="font-baloo2 text-2xl font-extrabold text-emerald-500">eehu!</span></p>
     </footer>
   )
 }
 
-function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(true)
+function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: boolean) => void }) {
   const [messages, setMessages] = useState(initialMessages)
   const [isTyping, setIsTyping] = useState(false)
   const resetChat = () => { setMessages(initialMessages); setIsTyping(false) }
@@ -165,7 +162,7 @@ function ChatWidget() {
     <>
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.08),transparent_42%)]" />
       {isOpen && (
-        <section className="fixed bottom-24 right-5 z-20 flex h-[min(660px,calc(100vh-7.5rem))] w-[420px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support">
+        <section className="fixed bottom-24 right-5 z-20 flex h-[min(660px,calc(100vh-7.5rem))] w-[420px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:z-[60] max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support">
           <ChatHeader onClose={() => setIsOpen(false)} onReset={resetChat} />
           <MessageList messages={messages} isTyping={isTyping} />
           <MessageInput onSend={sendMessage} disabled={isTyping} />
@@ -179,7 +176,7 @@ function ChatWidget() {
   )
 }
 
-function Nav() {
+function Nav({ chatOpen }: { chatOpen: boolean }) {
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -187,7 +184,7 @@ function Nav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
   return (
-    <nav className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled ? 'border-b border-white/[0.08] bg-[#020c07]/80 backdrop-blur-md' : ''}`}>
+    <nav className={`sticky top-0 z-50 w-full transition-all duration-300 ${chatOpen ? 'max-sm:hidden' : ''} ${scrolled ? 'border-b border-white/[0.08] bg-[#020c07]/80 backdrop-blur-md' : ''}`}>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 lg:px-8">
         <div className="flex items-center gap-1.5">
           <BrandMark />
@@ -282,11 +279,12 @@ function FeatureCard({ index, title, children, className = '' }: { index: string
 }
 
 export default function Page() {
+  const [chatOpen, setChatOpen] = useState(true)
   return (
     <main className="bg-dot-grid min-h-screen overflow-hidden text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(52,211,153,0.12),transparent_70%)]" />
 
-      <Nav />
+      <Nav chatOpen={chatOpen} />
 
       {/* Hero */}
       <section className="relative mx-auto grid max-w-6xl gap-14 px-6 pb-24 pt-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-8 lg:pb-32 lg:pt-20">
@@ -386,7 +384,7 @@ export default function Page() {
         </div>
       </section>
 
-      <ChatWidget />
+      <ChatWidget isOpen={chatOpen} setIsOpen={setChatOpen} />
     </main>
   )
 }
