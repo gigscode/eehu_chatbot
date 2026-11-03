@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   // Fetch all conversations with their messages
   const { data: conversations, error: convErr } = await db
     .from('conversations')
-    .select('id, session_id, created_at')
+    .select('id, session_id, lead_name, lead_contact, lead_service, status, deal_value, notes, follow_up_date, next_action, updated_at, created_at')
     .order('created_at', { ascending: false })
     .limit(100)
 
@@ -61,7 +61,18 @@ export async function GET(req: NextRequest) {
 
   // Group messages by session_id
   const grouped = conversations.map((conv) => ({
-    ...conv,
+    id: conv.id,
+    session_id: conv.session_id,
+    lead_name: conv.lead_name ?? null,
+    lead_contact: conv.lead_contact ?? null,
+    lead_service: conv.lead_service ?? null,
+    status: conv.status ?? 'new',
+    deal_value: conv.deal_value ?? 0,
+    notes: conv.notes ?? '',
+    follow_up_date: conv.follow_up_date ?? null,
+    next_action: conv.next_action ?? null,
+    updated_at: conv.updated_at,
+    created_at: conv.created_at,
     messages: messages.filter((m) => m.session_id === conv.session_id),
   }))
 

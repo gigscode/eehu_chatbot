@@ -303,10 +303,111 @@ function MessageInput({ onSend, disabled }: { onSend: (text: string) => void; di
   )
 }
 
+// Lead qualification step shown before handing off to WhatsApp
+function LeadForm({
+  sessionId,
+  leadService,
+  onDone,
+}: {
+  sessionId: string
+  leadService: string
+  onDone: (whatsappUrl: string) => void
+}) {
+  const [name, setName] = useState('')
+  const [contact, setContact] = useState('')
+  const [service, setService] = useState(leadService)
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || !contact.trim() || !service.trim()) {
+      setErr('Please fill in all three fields.')
+      return
+    }
+    setSaving(true)
+    setErr('')
+    try {
+      await fetch('/api/chat/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          leadName: name.trim(),
+          leadContact: contact.trim(),
+          leadService: service.trim(),
+        }),
+      })
+    } catch {
+      // Non-blocking: if saving fails, still open WhatsApp
+    } finally {
+      setSaving(false)
+    }
+    const encoded = encodeURIComponent(
+      `Hi, I would like to speak with someone about: ${service.trim()}. My name is ${name.trim()} and you can reach me at ${contact.trim()}.`
+    )
+    onDone(`https://wa.me/2347031098097?text=${encoded}`)
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mx-4 mb-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm"
+    >
+      <p className="mb-3 text-[13px] font-semibold text-slate-700">
+        Before we connect you, please leave a quick note so our team knows how to help.
+      </p>
+      <div className="space-y-2">
+        <input
+          type="text"
+          placeholder="Your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={120}
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+        />
+        <input
+          type="text"
+          placeholder="WhatsApp number or email"
+          value={contact}
+          onChange={(e) => setContact(e.target.value)}
+          maxLength={200}
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+        />
+        <textarea
+          placeholder="What do you need help with or a quote for?"
+          value={service}
+          onChange={(e) => setService(e.target.value)}
+          rows={2}
+          maxLength={500}
+          className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+        />
+      </div>
+      {err && <p className="mt-1.5 text-[11px] text-red-500">{err}</p>}
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-[#25D366]/30 transition hover:bg-[#1ebe5d] disabled:opacity-50"
+        >
+          <svg viewBox="0 0 24 24" className="size-4 fill-white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.555 4.116 1.528 5.845L.057 23.885a.5.5 0 0 0 .606.606l6.04-1.471A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.006-1.374l-.36-.214-3.724.907.923-3.635-.233-.374A9.818 9.818 0 1 1 12 21.818z"/></svg>
+          {saving ? 'Saving...' : 'Continue to WhatsApp'}
+        </button>
+      </div>
+      <p className="mt-2 text-center text-[10px] text-slate-400">
+        Your details are only shared with the eehu! team.
+      </p>
+    </form>
+  )
+}
+
 function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
   const [messages, setMessages] = useState(initialMessages)
   const [isTyping, setIsTyping] = useState(false)
-  const [showWhatsApp, setShowWhatsApp] = useState(false)
+  // 'none' | 'form' | 'whatsapp'
+  const [escalateStep, setEscalateStep] = useState<'none' | 'form' | 'whatsapp'>('none')
+  const [whatsappUrl, setWhatsappUrl] = useState('https://wa.me/2347031098097?text=Hi%2C%20I%20would%20like%20to%20speak%20with%20someone%20from%20the%20eehu!%20team.')
+  const [leadService, setLeadService] = useState('')
   const [quickReplies, setQuickReplies] = useState<string[]>(QUICK_REPLIES)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const historyRef = useRef<{ role: 'user' | 'model'; text: string }[]>([])
@@ -327,7 +428,8 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
   const resetChat = () => {
     setMessages(initialMessages)
     setIsTyping(false)
-    setShowWhatsApp(false)
+    setEscalateStep('none')
+    setLeadService('')
     setQuickReplies(QUICK_REPLIES)
     historyRef.current = []
   }
@@ -358,9 +460,11 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
       }
 
       if (data.escalate) {
-        // Show WhatsApp escalation card
-        setShowWhatsApp(true)
-        const escalateMsg = 'No problem at all! Click below to chat with a real person on WhatsApp right now.'
+        // Show lead qualification form before WhatsApp
+        setEscalateStep('form')
+        // Pre-fill service from the last user message
+        setLeadService(text)
+        const escalateMsg = 'No problem at all! Before I connect you, can you leave a quick note so our team knows exactly how to help?'
         historyRef.current = [...historyRef.current, { role: 'model', text: escalateMsg }]
         setMessages((c) => [...c, { id: Date.now() + 1, text: escalateMsg, sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
         if (soundEnabled) {
@@ -381,7 +485,10 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
     }
   }
 
-  const whatsappUrl = 'https://wa.me/2347031098097?text=Hi%2C%20I%20would%20like%20to%20speak%20with%20someone%20from%20the%20eehu!%20team.'
+  const handleLeadDone = (url: string) => {
+    setWhatsappUrl(url)
+    setEscalateStep('whatsapp')
+  }
 
   return (
     <>
@@ -395,10 +502,17 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
             onToggleSound={() => setSoundEnabled((s) => !s)}
           />
           <MessageList messages={messages} isTyping={isTyping} />
-          {!showWhatsApp && (
+          {escalateStep === 'none' && (
             <QuickReplies replies={quickReplies} onSelect={sendMessage} />
           )}
-          {showWhatsApp && (
+          {escalateStep === 'form' && (
+            <LeadForm
+              sessionId={sessionIdRef.current}
+              leadService={leadService}
+              onDone={handleLeadDone}
+            />
+          )}
+          {escalateStep === 'whatsapp' && (
             <div className="px-5 pb-3">
               <a
                 href={whatsappUrl}
@@ -411,7 +525,9 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
               </a>
             </div>
           )}
-          <MessageInput onSend={sendMessage} disabled={isTyping} />
+          {escalateStep === 'none' && (
+            <MessageInput onSend={sendMessage} disabled={isTyping} />
+          )}
         </section>
       )}
       <button type="button" onClick={() => setIsOpen((o) => !o)} className={`fixed bottom-5 right-5 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 transition duration-200 hover:scale-105 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 ${isOpen ? 'max-sm:hidden' : ''}`} aria-label={isOpen ? 'Close chat' : 'Open chat'}>
@@ -716,11 +832,14 @@ export default function Page() {
       <section className="relative mx-auto grid max-w-6xl gap-14 px-6 pb-24 pt-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-8 lg:pb-32 lg:pt-20">
         <div className="absolute -left-32 top-0 size-125 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="relative" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) both' }}>
+          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-400">
+            Website enquiry-to-customer pipeline
+          </p>
           <h1 className="max-w-2xl text-5xl font-extrabold leading-[1.02] tracking-tighter text-white sm:text-6xl lg:text-7xl">
-            We add live chat to your <span className="text-emerald-400">existing website.</span>
+            Stop losing leads in <span className="text-emerald-400">your chats.</span>
           </h1>
           <p className="mt-7 max-w-xl text-xl leading-9 text-slate-300" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.12s both' }}>
-            Your website already gets visitors. eehu! helps you talk to them before they leave. We set it up for you, on the site you already have.
+            Your website should do more than answer questions. eehu! captures enquiries, qualifies buyer needs before WhatsApp, and gives your team a clear follow-up queue so high-value quotes never slip away.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.22s both' }}>
             <button
@@ -743,8 +862,8 @@ export default function Page() {
       {/* Features */}
       <section id="features" className="mx-auto max-w-6xl px-6 pb-24 lg:px-8">
         <div className="mb-12 max-w-xl">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">What eehu! does for your business</p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Stop losing customers who had questions.</h2>
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">How eehu! protects your pipeline</p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Every website conversation becomes a structured lead.</h2>
         </div>
         <div className="grid items-end gap-5 md:grid-cols-[1.4fr_1fr_1.2fr]">
           <FeatureCard
@@ -755,27 +874,27 @@ export default function Page() {
             borderRadius="48px 32px 56px 36px / 36px 52px 32px 56px"
             className="p-8 text-lg min-h-70 md:min-h-80"
           >
-            When someone stops on your pricing page or goes quiet during checkout, eehu! gives them a way to ask. Most of the time, one answer is all it takes.
+            When someone stops on your pricing or service page, eehu! invites them to ask. In business, one timely answer keeps a warm client from contacting your competitor.
           </FeatureCard>
           <FeatureCard
             num="02"
-            label="The memory"
-            title="Your team picks up where the chat left off"
+            label="The qualification"
+            title="Collect contact details before WhatsApp"
             blobPath="M38 6 C56 2, 75 16, 76 36 C77 56, 60 74, 40 75 C20 76, 4 60, 5 40 C6 20, 20 10, 38 6Z"
             borderRadius="32px 52px 36px 48px / 52px 36px 56px 32px"
             className="p-7 text-sm min-h-55 md:-translate-y-8"
           >
-            No more "can you explain your issue again?" Your team sees exactly what the customer asked, so every conversation starts in the right place.
+            No more lost contacts in cluttered messaging apps. eehu! secures the visitor name, phone number, and quote details in your database before handoff.
           </FeatureCard>
           <FeatureCard
             num="03"
-            label="The signal"
-            title="Find out what your website is failing to say"
+            label="The follow-up queue"
+            title="Track who needs an action today"
             blobPath="M42 5 C62 8, 77 24, 75 44 C73 64, 56 78, 36 76 C16 74, 3 57, 5 37 C7 17, 22 2, 42 5Z"
             borderRadius="44px 32px 56px 36px / 32px 52px 36px 56px"
             className="p-8 text-base min-h-62.5 md:translate-y-6 md:min-h-67.5"
           >
-            When the same question keeps coming up, that is a gap in your website. eehu! shows you where, so you can fix it.
+            See every enquiry in your private pipeline board. Schedule next actions, set follow-up dates, log won deal amounts, and never let high-value quotes disappear.
           </FeatureCard>
         </div>
       </section>
