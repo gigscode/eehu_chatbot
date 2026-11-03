@@ -839,7 +839,7 @@ export default function Page() {
             Stop losing leads in <span className="text-emerald-400">your chats.</span>
           </h1>
           <p className="mt-7 max-w-xl text-xl leading-9 text-slate-300" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.12s both' }}>
-            Your website should do more than answer questions. eehu! captures enquiries, qualifies buyer needs before WhatsApp, and gives your team a clear follow-up queue so high-value quotes never slip away.
+            Your website should do more than answer questions. eehu! captures enquiries, qualifies buyer needs before WhatsApp, and gives your team a clear follow-up queue so valuable sales opportunities do not disappear.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.22s both' }}>
             <button

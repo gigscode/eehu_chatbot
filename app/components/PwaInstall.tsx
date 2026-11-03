@@ -16,29 +16,82 @@ export default function PwaInstall() {
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null)
 
   useEffect(() => {
-    // Register service worker
+    let cleanupServiceWorker = () => {}
+
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
-        // Service worker registration failed silently. App still works normally.
-      })
+      const hadController = Boolean(navigator.serviceWorker.controller)
+      let reloaded = false
+      let updateTimer: number | undefined
+      let registration: ServiceWorkerRegistration | undefined
+
+      const onControllerChange = () => {
+        if (hadController && !reloaded) {
+          reloaded = true
+          window.location.reload()
+        }
+      }
+
+      const updateServiceWorker = async () => {
+        try {
+          registration = await navigator.serviceWorker.register(
+            `/sw.js?v=${encodeURIComponent(process.env.NEXT_PUBLIC_APP_VERSION ?? 'development')}`,
+            { updateViaCache: 'none' }
+          )
+          await registration.update()
+        } catch (error) {
+          console.error('Unable to check for app updates:', error)
+        }
+      }
+
+      const checkForUpdates = () => {
+        if (document.visibilityState === 'visible' && registration) {
+          registration.update().catch((error) => {
+            console.error('Unable to check for app updates:', error)
+          })
+        }
+      }
+
+      navigator.serviceWorker.addEventListener(
+        'controllerchange',
+        onControllerChange
+      )
+      void updateServiceWorker()
+      window.addEventListener('focus', checkForUpdates)
+      document.addEventListener('visibilitychange', checkForUpdates)
+      updateTimer = window.setInterval(checkForUpdates, 60 * 60 * 1000)
+
+      cleanupServiceWorker = () => {
+        navigator.serviceWorker.removeEventListener(
+          'controllerchange',
+          onControllerChange
+        )
+        window.removeEventListener('focus', checkForUpdates)
+        document.removeEventListener('visibilitychange', checkForUpdates)
+        if (updateTimer !== undefined) {
+          window.clearInterval(updateTimer)
+        }
+      }
     }
 
-    // Do not show if already dismissed or installed
+    let installPromptHandler: ((event: Event) => void) | undefined
     if (
-      localStorage.getItem(DISMISSED_KEY) === '1' ||
-      window.matchMedia('(display-mode: standalone)').matches
+      localStorage.getItem(DISMISSED_KEY) !== '1' &&
+      !window.matchMedia('(display-mode: standalone)').matches
     ) {
-      return
+      installPromptHandler = (event: Event) => {
+        event.preventDefault()
+        deferredPrompt.current = event as BeforeInstallPromptEvent
+        setVisible(true)
+      }
+      window.addEventListener('beforeinstallprompt', installPromptHandler)
     }
 
-    const handler = (e: Event) => {
-      e.preventDefault()
-      deferredPrompt.current = e as BeforeInstallPromptEvent
-      setVisible(true)
+    return () => {
+      cleanupServiceWorker()
+      if (installPromptHandler) {
+        window.removeEventListener('beforeinstallprompt', installPromptHandler)
+      }
     }
-
-    window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
   function dismiss() {
@@ -112,4 +165,3 @@ export default function PwaInstall() {
     </div>
   )
 }
-

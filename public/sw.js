@@ -1,7 +1,9 @@
-// eehu! service worker
 // Caches the app shell for offline access. API requests always go to the network.
 
-const CACHE_NAME = 'eehu-v1'
+const CACHE_PREFIX = 'eehu-'
+const deploymentVersion =
+  new URL(self.location.href).searchParams.get('v') || 'local'
+const CACHE_NAME = `${CACHE_PREFIX}${deploymentVersion.replace(/[^a-zA-Z0-9_-]/g, '')}`
 const SHELL_URLS = [
   '/',
   '/Glossy Emerald Eehu Chat icon.png',
@@ -10,9 +12,11 @@ const SHELL_URLS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_URLS))
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(SHELL_URLS))
+      .then(() => self.skipWaiting())
   )
-  self.skipWaiting()
 })
 
 self.addEventListener('activate', (event) => {
@@ -20,12 +24,11 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME)
+          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
           .map((key) => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim())
   )
-  self.clients.claim()
 })
 
 self.addEventListener('fetch', (event) => {
@@ -55,4 +58,3 @@ self.addEventListener('fetch', (event) => {
       .catch(() => caches.match(event.request))
   )
 })
-
