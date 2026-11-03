@@ -232,3 +232,21 @@
 .font-baloo2 {
   font-family: var(--font-baloo2), ui-sans-serif, system-ui, sans-serif;
 }
+
+.chat-scrollbar {
+  scrollbar-color: rgb(148 163 184 / 0.55) transparent;
+  scrollbar-width: thin;
+}
+
+.chat-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgb(148 163 184 / 0.55);
+}

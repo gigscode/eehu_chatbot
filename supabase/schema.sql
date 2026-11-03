@@ -53,14 +53,11 @@ on conflict (session_id) do nothing;
 alter table conversations enable row level security;
 alter table messages enable row level security;
 
--- Allow the anon key to insert (so the chat widget can save messages)
+-- Chat writes go through server routes using the service role key.
+-- Do not allow unauthenticated clients to write chat or lead records directly.
 drop policy if exists "Allow anon insert conversations" on conversations;
-create policy "Allow anon insert conversations"
-  on conversations for insert to anon with check (true);
-
 drop policy if exists "Allow anon insert messages" on messages;
-create policy "Allow anon insert messages"
-  on messages for insert to anon with check (true);
+drop policy if exists "Allow anon update conversations" on conversations;
 
 -- Only the service role (your dashboard / server) can read
 drop policy if exists "Allow service role read conversations" on conversations;
@@ -75,8 +72,3 @@ create policy "Allow service role read messages"
 drop policy if exists "Allow service role update conversations" on conversations;
 create policy "Allow service role update conversations"
   on conversations for update to service_role using (true) with check (true);
-
--- Allow anon to update lead details (name, contact, service) during chat
-drop policy if exists "Allow anon update conversations" on conversations;
-create policy "Allow anon update conversations"
-  on conversations for update to anon using (true) with check (true);

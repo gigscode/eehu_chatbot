@@ -245,7 +245,7 @@ function MessageList({ messages, isTyping }: { messages: Message[]; isTyping: bo
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isTyping])
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto bg-[#fcfcfd] px-5 py-5">
+    <div className="chat-scrollbar min-h-0 flex-1 overflow-y-auto bg-[#fcfcfd] px-5 py-5">
       <div className="mb-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
         <span className="h-px flex-1 bg-slate-200" /> Today <span className="h-px flex-1 bg-slate-200" />
       </div>

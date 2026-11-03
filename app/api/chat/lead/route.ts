@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabase } from '@/lib/supabase'
 
 const NO_STORE = { 'Cache-Control': 'no-store' }
-
-function getAnonClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!url || !key) return null
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
-}
 
 const SESSION_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -39,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Service is required.' }, { status: 400, headers: NO_STORE })
   }
 
-  const db = getAnonClient()
+  const db = getSupabase()
   if (!db) {
     return NextResponse.json({ error: 'Database not configured.' }, { status: 500, headers: NO_STORE })
   }
