@@ -46,13 +46,13 @@ export async function POST(req: NextRequest) {
 
   const { error } = await db
     .from('conversations')
-    .update({
+    .upsert({
+      session_id: sessionId,
       lead_name: leadName.trim(),
       lead_contact: leadContact.trim(),
       lead_service: leadService.trim(),
       updated_at: new Date().toISOString(),
     })
-    .eq('session_id', sessionId)
 
   if (error) {
     return NextResponse.json({ error: 'Could not save lead details.' }, { status: 500, headers: NO_STORE })
@@ -60,4 +60,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ ok: true }, { headers: NO_STORE })
 }
-

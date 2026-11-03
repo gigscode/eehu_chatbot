@@ -208,22 +208,21 @@ async function getGeminiReply(apiKey: string, contents: object[]): Promise<strin
   throw new Error('No supported Gemini model was found for this configuration.')
 }
 
-// Cache known session IDs in memory to avoid a redundant upsert on every message.
-// This resets on cold start, which is acceptable: the upsert is idempotent.
-const knownSessions = new Set<string>()
-
 async function saveMessage(sessionId: string, role: 'user' | 'agent', text: string) {
-  try {
-    const db = getSupabase()
-    if (!db || !sessionId) return
-    if (!knownSessions.has(sessionId)) {
-      await db.from('conversations').upsert({ session_id: sessionId }, { onConflict: 'session_id' })
-      knownSessions.add(sessionId)
-    }
-    await db.from('messages').insert({ session_id: sessionId, role, text })
-  } catch (err) {
-    console.warn('Database save error:', err)
+  const db = getSupabase()
+  if (!db) {
+    throw new Error('Database is not configured.')
   }
+
+  const { error: conversationError } = await db
+    .from('conversations')
+    .upsert({ session_id: sessionId }, { onConflict: 'session_id' })
+  if (conversationError) throw conversationError
+
+  const { error: messageError } = await db
+    .from('messages')
+    .insert({ session_id: sessionId, role, text })
+  if (messageError) throw messageError
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -262,13 +261,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Message too long. Please keep it under 2000 characters.' }, { status: 400, headers: NO_STORE })
   }
 
-  // Persist user message asynchronously
-  void saveMessage(sessionId, 'user', lastText)
+  try {
+    await saveMessage(sessionId, 'user', lastText)
+  } catch (err) {
+    console.error('Unable to save incoming chat message:', err)
+    return NextResponse.json(
+      { error: 'Your message could not be saved. Please try again.' },
+      { status: 503, headers: NO_STORE }
+    )
+  }
 
   // 1. Instant check for human escalation requests
   if (isHumanEscalation(lastText)) {
     const escalateReply = 'No problem at all! Click below to chat with a real person on WhatsApp right now.'
-    void saveMessage(sessionId, 'agent', escalateReply)
+    try {
+      await saveMessage(sessionId, 'agent', escalateReply)
+    } catch (err) {
+      console.error('Unable to save chat handoff message:', err)
+    }
     return NextResponse.json({ reply: '', escalate: true }, { headers: NO_STORE })
   }
 
@@ -303,8 +313,11 @@ export async function POST(req: NextRequest) {
     ? 'No problem at all! Click below to chat with a real person on WhatsApp right now.'
     : replyText
 
-  // Persist agent reply asynchronously
-  void saveMessage(sessionId, 'agent', agentReply)
+  try {
+    await saveMessage(sessionId, 'agent', agentReply)
+  } catch (err) {
+    console.error('Unable to save chat reply:', err)
+  }
 
   return NextResponse.json(
     {

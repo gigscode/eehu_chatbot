@@ -328,7 +328,7 @@ function LeadForm({
     setSaving(true)
     setErr('')
     try {
-      await fetch('/api/chat/lead', {
+      const response = await fetch('/api/chat/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -338,8 +338,12 @@ function LeadForm({
           leadService: service.trim(),
         }),
       })
+      if (!response.ok) {
+        throw new Error('Lead details could not be saved.')
+      }
     } catch {
-      // Non-blocking: if saving fails, still open WhatsApp
+      setErr('We could not save your details. Please try again. WhatsApp has not been opened yet.')
+      return
     } finally {
       setSaving(false)
     }
@@ -957,6 +961,15 @@ export default function Page() {
       </section>
 
       <ChatWidget isOpen={chatOpen} setIsOpen={setChatOpen} />
+      <footer className="border-t border-white/10 bg-[#020c07]">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+          <p>eehu! helps you keep track of website enquiries.</p>
+          <nav aria-label="Legal" className="flex items-center gap-5">
+            <a href="/privacy" className="transition hover:text-emerald-300">Privacy Policy</a>
+            <a href="/terms" className="transition hover:text-emerald-300">Terms of Use</a>
+          </nav>
+        </div>
+      </footer>
     </main>
   )
 }
