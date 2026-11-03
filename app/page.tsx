@@ -534,7 +534,7 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
           )}
         </section>
       )}
-      <button type="button" onClick={() => setIsOpen((o) => !o)} className={`fixed bottom-5 right-5 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 transition duration-200 hover:scale-105 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 ${isOpen ? 'max-sm:hidden' : ''}`} aria-label={isOpen ? 'Close chat' : 'Open chat'}>
+      <button type="button" onClick={() => setIsOpen((o) => !o)} className={`fixed bottom-8 right-5 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 transition duration-200 hover:scale-105 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 ${isOpen ? 'max-sm:hidden' : ''}`} aria-label={isOpen ? 'Close chat' : 'Open chat'}>
         {isOpen ? <X className="size-5" /> : <MessageCircle className="size-6" />}
         <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-emerald-400/40" />
       </button>
