@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   ArrowRight,
-  Check,
   CheckCheck,
   Ellipsis,
   MessageCircle,
@@ -90,6 +89,35 @@ function TypingIndicator() {
   )
 }
 
+const QUICK_REPLIES = [
+  'What does eehu! actually do?',
+  'How do you add it to my website?',
+  'How long does setup take?',
+  'How much does it cost?',
+  'Can I see an example?',
+  'I want to talk to a real person',
+]
+
+function QuickReplies({ onSelect }: { onSelect: (text: string) => void }) {
+  return (
+    <div className="px-5 pb-4">
+      <p className="mb-2.5 text-xs font-semibold text-slate-400">Quick questions</p>
+      <div className="flex flex-wrap gap-2">
+        {QUICK_REPLIES.map((q) => (
+          <button
+            key={q}
+            type="button"
+            onClick={() => onSelect(q)}
+            className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 hover:border-emerald-300 active:scale-95"
+          >
+            {q}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function MessageList({ messages, isTyping }: { messages: Message[]; isTyping: boolean }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isTyping])
@@ -146,18 +174,55 @@ function MessageInput({ onSend, disabled }: { onSend: (text: string) => void; di
   )
 }
 
-function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: boolean) => void }) {
+function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
   const [messages, setMessages] = useState(initialMessages)
   const [isTyping, setIsTyping] = useState(false)
-  const resetChat = () => { setMessages(initialMessages); setIsTyping(false) }
-  const sendMessage = (text: string) => {
-    setMessages((c) => [...c, { id: Date.now(), text, sender: 'user', time: 'Now', status: 'sent' }])
-    setIsTyping(true)
-    window.setTimeout(() => {
-      setIsTyping(false)
-      setMessages((c) => [...c, { id: Date.now() + 1, text: 'Thanks for reaching out! A specialist will be with you shortly.', sender: 'agent', time: 'Now' }])
-    }, 1200)
+  const [showWhatsApp, setShowWhatsApp] = useState(false)
+  const [showQuickReplies, setShowQuickReplies] = useState(true)
+  const historyRef = useRef<{ role: 'user' | 'model'; text: string }[]>([])
+
+  const resetChat = () => {
+    setMessages(initialMessages)
+    setIsTyping(false)
+    setShowWhatsApp(false)
+    setShowQuickReplies(true)
+    historyRef.current = []
   }
+
+  const sendMessage = async (text: string) => {
+    setShowQuickReplies(false)
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    setMessages((c) => [...c, { id: Date.now(), text, sender: 'user', time: now, status: 'sent' }])
+    setIsTyping(true)
+    historyRef.current = [...historyRef.current, { role: 'user', text }]
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: historyRef.current }),
+      })
+      const data = await res.json()
+
+      if (data.escalate) {
+        // Show WhatsApp escalation card instead of a text reply
+        setShowWhatsApp(true)
+        const escalateMsg = 'No problem at all! Click below to chat with a real person on WhatsApp right now.'
+        historyRef.current = [...historyRef.current, { role: 'model', text: escalateMsg }]
+        setMessages((c) => [...c, { id: Date.now() + 1, text: escalateMsg, sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
+      } else {
+        const reply: string = data.reply ?? 'Sorry, something went wrong. Please try again.'
+        historyRef.current = [...historyRef.current, { role: 'model', text: reply }]
+        setMessages((c) => [...c, { id: Date.now() + 1, text: reply, sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
+      }
+    } catch {
+      setMessages((c) => [...c, { id: Date.now() + 1, text: 'Something went wrong. Please try again.', sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
+    } finally {
+      setIsTyping(false)
+    }
+  }
+
+  const whatsappUrl = 'https://wa.me/2347032098097?text=Hi%2C%20I%20would%20like%20to%20speak%20with%20someone%20from%20the%20eehu!%20team.'
+
   return (
     <>
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.08),transparent_42%)]" />
@@ -165,6 +230,22 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: boo
         <section className="fixed bottom-24 right-5 z-20 flex h-[min(660px,calc(100vh-7.5rem))] w-[420px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:z-[60] max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support">
           <ChatHeader onClose={() => setIsOpen(false)} onReset={resetChat} />
           <MessageList messages={messages} isTyping={isTyping} />
+          {showQuickReplies && !showWhatsApp && (
+            <QuickReplies onSelect={sendMessage} />
+          )}
+          {showWhatsApp && (
+            <div className="px-5 pb-3">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2.5 w-full rounded-xl bg-[#25D366] px-4 py-3 text-sm font-bold text-white shadow-md shadow-[#25D366]/30 transition hover:bg-[#1ebe5d]"
+              >
+                <svg viewBox="0 0 24 24" className="size-5 fill-white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.555 4.116 1.528 5.845L.057 23.885a.5.5 0 0 0 .606.606l6.04-1.471A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.006-1.374l-.36-.214-3.724.907.923-3.635-.233-.374A9.818 9.818 0 1 1 12 21.818z"/></svg>
+                Chat on WhatsApp
+              </a>
+            </div>
+          )}
           <MessageInput onSend={sendMessage} disabled={isTyping} />
         </section>
       )}
@@ -176,7 +257,7 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: boo
   )
 }
 
-function Nav({ chatOpen }: { chatOpen: boolean }) {
+function Nav({ chatOpen, onOpenChat }: { chatOpen: boolean; onOpenChat: () => void }) {
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -195,7 +276,7 @@ function Nav({ chatOpen }: { chatOpen: boolean }) {
           <a href="#benefits" className="transition hover:text-emerald-400">For businesses</a>
           <a href="#install" className="transition hover:text-emerald-400">Install</a>
         </div>
-        <button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="hidden items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-400 sm:flex">
+        <button type="button" onClick={onOpenChat} className="hidden items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-400 sm:flex">
           Try the demo <ArrowRight className="size-4" />
         </button>
       </div>
@@ -284,29 +365,32 @@ export default function Page() {
     <main className="bg-dot-grid min-h-screen overflow-hidden text-white">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(52,211,153,0.12),transparent_70%)]" />
 
-      <Nav chatOpen={chatOpen} />
+      <Nav chatOpen={chatOpen} onOpenChat={() => { setChatOpen(true); setTimeout(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus(), 100) }} />
 
       {/* Hero */}
       <section className="relative mx-auto grid max-w-6xl gap-14 px-6 pb-24 pt-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-8 lg:pb-32 lg:pt-20">
         <div className="absolute -left-32 top-0 size-[500px] rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="relative" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) both' }}>
           <h1 className="max-w-2xl text-5xl font-extrabold leading-[1.02] tracking-[-0.05em] text-white sm:text-6xl lg:text-7xl">
-            Turn every website visit into a <span className="text-emerald-400">conversation.</span>
+            We add live chat to your <span className="text-emerald-400">existing website.</span>
           </h1>
           <p className="mt-7 max-w-xl text-xl leading-9 text-slate-300" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.12s both' }}>
-            When a customer gets stuck, eehu! gives them a clear next step before they leave. Add helpful support to your existing site without rebuilding pages or creating another inbox for your team.
+            Your website already gets visitors. eehu! helps you talk to them before they leave. We set it up for you, on the site you already have.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.22s both' }}>
-            <button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">
+            <button
+              type="button"
+              onClick={() => {
+                setChatOpen(true)
+                setTimeout(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus(), 100)
+              }}
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400"
+            >
               See eehu! in action <ArrowRight className="size-4" />
             </button>
-            <a href="#benefits" className="rounded-full border border-white/10 px-6 py-3.5 text-base font-semibold text-slate-300 transition hover:border-white/20 hover:text-white">Why businesses use it</a>
+            <a href="#benefits" className="rounded-full border border-white/10 px-6 py-3.5 text-base font-semibold text-slate-300 transition hover:border-white/20 hover:text-white">How it works</a>
           </div>
-          <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate-500" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.32s both' }}>
-            <span className="flex items-center gap-2"><Check className="size-4 text-emerald-400" /> Installs in minutes</span>
-            <span className="flex items-center gap-2"><Check className="size-4 text-emerald-400" /> Works with any site</span>
-            <span className="flex items-center gap-2"><Check className="size-4 text-emerald-400" /> No code required</span>
-          </div>
+          
         </div>
         <HeroMock />
       </section>
@@ -314,13 +398,13 @@ export default function Page() {
       {/* Features */}
       <section id="features" className="mx-auto max-w-6xl px-6 pb-24 lg:px-8">
         <div className="mb-12 max-w-xl">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">One small widget. A bigger business.</p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">Your customers get answers. Your team gets time back.</h2>
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">What eehu! does for your business</p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">Stop losing customers who had questions.</h2>
         </div>
         <div className="grid items-end gap-4 md:grid-cols-[1.4fr_1fr_1.2fr]">
-          <FeatureCard index="01 / The rescue" title="Catch the moment someone almost leaves" className="p-9 text-lg min-h-[280px] md:min-h-[320px]">When a visitor pauses on pricing or setup, eehu! gives them a useful next step instead of another dead end.</FeatureCard>
-          <FeatureCard index="02 / The memory" title="Make every handoff feel informed" className="p-6 text-sm min-h-[220px] md:-translate-y-10">Your team sees what the customer tried, where they got stuck, and what they need, so nobody asks them to start over.</FeatureCard>
-          <FeatureCard index="03 / The signal" title="Turn repeated friction into decisions" className="p-8 text-base min-h-[250px] md:translate-y-6 md:min-h-[270px]">Spot the questions your website keeps failing to answer, then fix the page, offer, or process behind them.</FeatureCard>
+          <FeatureCard index="01 / The rescue" title="Catch people before they walk away" className="p-9 text-lg min-h-[280px] md:min-h-[320px]">When someone stops on your pricing page or goes quiet during checkout, eehu! gives them a way to ask. Most of the time, one answer is all it takes.</FeatureCard>
+          <FeatureCard index="02 / The memory" title="Your team picks up where the chat left off" className="p-6 text-sm min-h-[220px] md:-translate-y-10">No more "can you explain your issue again?" Your team sees exactly what the customer asked, so every conversation starts in the right place.</FeatureCard>
+          <FeatureCard index="03 / The signal" title="Find out what your website is failing to say" className="p-8 text-base min-h-[250px] md:translate-y-6 md:min-h-[270px]">When the same question keeps coming up, that is a gap in your website. eehu! shows you where, so you can fix it.</FeatureCard>
         </div>
       </section>
 
@@ -328,9 +412,9 @@ export default function Page() {
       <section id="benefits" className="border-y border-white/5 bg-white/[0.03]">
         <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">Made for the web you already have</p>
-            <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">A smarter layer on top of your existing website.</h2>
-            <p className="mt-5 max-w-md text-lg leading-8 text-slate-400">No migration, no redesign, no months-long implementation. Add eehu! to the places your customers already trust.</p>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">No tech headaches</p>
+            <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">We handle the whole setup. You just talk to customers.</h2>
+            <p className="mt-5 max-w-md text-lg leading-8 text-slate-400">You do not need to change your website, hire a developer, or learn new software. We add the chat to your site and you are ready to go.</p>
           </div>
           <div className="grid items-end gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/5 bg-white/5 p-8 min-h-[220px] transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07]">
@@ -339,8 +423,8 @@ export default function Page() {
                 <path d="M40 8 C55 5, 72 18, 74 35 C76 52, 63 70, 46 73 C29 76, 10 65, 7 48 C4 31, 18 11, 40 8Z" fill="none" stroke="rgba(52,211,153,0.35)" strokeWidth="1.5" />
                 <text x="40" y="46" textAnchor="middle" fontSize="22" fontWeight="800" fill="rgb(52,211,153)" fontFamily="sans-serif">01</text>
               </svg>
-              <h3 className="mt-6 text-lg font-extrabold text-white">Drop-in setup</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">One lightweight snippet works across your marketing site, store, or customer portal.</p>
+              <h3 className="mt-6 text-lg font-extrabold text-white">We set it up for you</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">Tell us about your business and we build and add the chat to your site. No technical work on your end.</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-white/5 p-6 min-h-[180px] sm:translate-y-4 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07]">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
@@ -348,8 +432,8 @@ export default function Page() {
                 <path d="M38 6 C56 2, 75 16, 76 36 C77 56, 60 74, 40 75 C20 76, 4 60, 5 40 C6 20, 20 10, 38 6Z" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1.5" />
                 <text x="40" y="46" textAnchor="middle" fontSize="22" fontWeight="800" fill="rgb(16,185,129)" fontFamily="sans-serif">02</text>
               </svg>
-              <h3 className="mt-6 text-base font-extrabold text-white">A trusted experience</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">Keep your brand, your voice, and your customer conversations in one calm place.</p>
+              <h3 className="mt-6 text-base font-extrabold text-white">Looks like it belongs</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">The chat uses your brand colours and voice. Customers will not know it was added by a third party.</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-white/5 p-6 min-h-[190px] sm:-translate-y-3 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07]">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
@@ -357,8 +441,8 @@ export default function Page() {
                 <path d="M42 5 C62 8, 77 24, 75 44 C73 64, 56 78, 36 76 C16 74, 3 57, 5 37 C7 17, 22 2, 42 5Z" fill="none" stroke="rgba(5,150,105,0.35)" strokeWidth="1.5" />
                 <text x="40" y="46" textAnchor="middle" fontSize="22" fontWeight="800" fill="rgb(5,150,105)" fontFamily="sans-serif">03</text>
               </svg>
-              <h3 className="mt-6 text-base font-extrabold text-white">Always available</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">Help does not stop when your team signs off. eehu! is ready around the clock.</p>
+              <h3 className="mt-6 text-base font-extrabold text-white">Available around the clock</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">Customers can start a conversation at any time. You reply when you are ready, at your own pace.</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-white/5 p-9 min-h-[240px] transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07]">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
@@ -366,8 +450,8 @@ export default function Page() {
                 <path d="M36 4 C58 0, 78 18, 77 40 C76 62, 58 79, 36 78 C14 77, -1 60, 3 38 C7 16, 14 8, 36 4Z" fill="none" stroke="rgba(52,211,153,0.28)" strokeWidth="1.5" />
                 <text x="40" y="46" textAnchor="middle" fontSize="22" fontWeight="800" fill="rgb(52,211,153)" fontFamily="sans-serif">04</text>
               </svg>
-              <h3 className="mt-6 text-xl font-extrabold text-white">Built to learn</h3>
-              <p className="mt-2 text-base leading-7 text-slate-400">See what customers ask most and turn real conversations into better decisions.</p>
+              <h3 className="mt-6 text-xl font-extrabold text-white">See what customers keep asking</h3>
+              <p className="mt-2 text-base leading-7 text-slate-400">Every conversation shows you what your customers need. Over time that tells you exactly where your business can improve.</p>
             </div>
           </div>
         </div>
@@ -376,9 +460,9 @@ export default function Page() {
       {/* CTA */}
       <section id="install" className="mx-auto max-w-6xl px-6 py-20 text-center lg:px-8">
         <div className="mx-auto max-w-2xl rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5 px-6 py-14 shadow-2xl shadow-emerald-900/20 sm:px-12">
-          <h2 className="text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">Give your website a better way to help.</h2>
-          <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-slate-300">Try the live chat in the corner, then imagine it working across every page of your business.</p>
-          <button type="button" onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus()} className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">
+          <h2 className="text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">Ready to talk to more of your customers?</h2>
+          <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-slate-300">Try the chat in the corner. That is exactly what your visitors will see on your site.</p>
+          <button type="button" onClick={() => { setChatOpen(true); setTimeout(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus(), 100) }} className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">
             Start a conversation <ArrowRight className="size-4" />
           </button>
         </div>
