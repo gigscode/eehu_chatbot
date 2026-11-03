@@ -98,12 +98,19 @@ const QUICK_REPLIES = [
   'I want to talk to a real person',
 ]
 
-function QuickReplies({ onSelect }: { onSelect: (text: string) => void }) {
+function QuickReplies({
+  replies,
+  onSelect,
+}: {
+  replies: string[]
+  onSelect: (text: string) => void
+}) {
+  if (replies.length === 0) return null
   return (
     <div className="px-5 pb-4">
       <p className="mb-2.5 text-xs font-semibold text-slate-400">Quick questions</p>
       <div className="flex flex-wrap gap-2">
-        {QUICK_REPLIES.map((q) => (
+        {replies.map((q) => (
           <button
             key={q}
             type="button"
@@ -178,9 +185,9 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
   const [messages, setMessages] = useState(initialMessages)
   const [isTyping, setIsTyping] = useState(false)
   const [showWhatsApp, setShowWhatsApp] = useState(false)
-  const [showQuickReplies, setShowQuickReplies] = useState(true)
+  const [quickReplies, setQuickReplies] = useState<string[]>(QUICK_REPLIES)
   const historyRef = useRef<{ role: 'user' | 'model'; text: string }[]>([])
-  // Stable session ID for this browser tab — persists across widget open/close
+  // Stable session ID for this browser tab, persists across widget open and close
   const sessionIdRef = useRef<string>(
     typeof crypto !== 'undefined'
       ? crypto.randomUUID()
@@ -191,12 +198,14 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
     setMessages(initialMessages)
     setIsTyping(false)
     setShowWhatsApp(false)
-    setShowQuickReplies(true)
+    setQuickReplies(QUICK_REPLIES)
     historyRef.current = []
   }
 
   const sendMessage = async (text: string) => {
-    setShowQuickReplies(false)
+    // When a quick question is clicked or sent, remove it from the list
+    setQuickReplies((prev) => prev.filter((item) => item.toLowerCase() !== text.trim().toLowerCase()))
+
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     setMessages((c) => [...c, { id: Date.now(), text, sender: 'user', time: now, status: 'sent' }])
     setIsTyping(true)
@@ -210,13 +219,13 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
       const data = await res.json()
 
       if (data.escalate) {
-        // Show WhatsApp escalation card instead of a text reply
+        // Show WhatsApp escalation card
         setShowWhatsApp(true)
         const escalateMsg = 'No problem at all! Click below to chat with a real person on WhatsApp right now.'
         historyRef.current = [...historyRef.current, { role: 'model', text: escalateMsg }]
         setMessages((c) => [...c, { id: Date.now() + 1, text: escalateMsg, sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
       } else {
-        const reply: string = data.reply ?? 'Sorry, something went wrong. Please try again.'
+        const reply: string = data.reply || 'Thanks for reaching out! How can we help your business today?'
         historyRef.current = [...historyRef.current, { role: 'model', text: reply }]
         setMessages((c) => [...c, { id: Date.now() + 1, text: reply, sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
       }
@@ -227,7 +236,7 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
     }
   }
 
-  const whatsappUrl = 'https://wa.me/2347032098097?text=Hi%2C%20I%20would%20like%20to%20speak%20with%20someone%20from%20the%20eehu!%20team.'
+  const whatsappUrl = 'https://wa.me/2347031098097?text=Hi%2C%20I%20would%20like%20to%20speak%20with%20someone%20from%20the%20eehu!%20team.'
 
   return (
     <>
@@ -236,8 +245,8 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
         <section className="fixed bottom-24 right-5 z-20 flex h-[min(660px,calc(100vh-7.5rem))] w-[420px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:z-[60] max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support">
           <ChatHeader onClose={() => setIsOpen(false)} onReset={resetChat} />
           <MessageList messages={messages} isTyping={isTyping} />
-          {showQuickReplies && !showWhatsApp && (
-            <QuickReplies onSelect={sendMessage} />
+          {!showWhatsApp && (
+            <QuickReplies replies={quickReplies} onSelect={sendMessage} />
           )}
           {showWhatsApp && (
             <div className="px-5 pb-3">
