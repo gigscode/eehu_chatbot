@@ -27,7 +27,7 @@ function checkRateLimit(
   return false
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const forwarded = req.headers.get('x-forwarded-for')
   const ip = forwarded ? forwarded.split(',')[0].trim() : '127.0.0.1'
 
@@ -56,4 +56,3 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ['/api/chat', '/api/admin/conversations'],
 }
-

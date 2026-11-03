@@ -534,7 +534,7 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
           )}
         </section>
       )}
-      <button type="button" onClick={() => setIsOpen((o) => !o)} className={`fixed bottom-8 right-5 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 transition duration-200 hover:scale-105 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 ${isOpen ? 'max-sm:hidden' : ''}`} aria-label={isOpen ? 'Close chat' : 'Open chat'}>
+      <button type="button" onClick={() => setIsOpen((o) => !o)} className={`fixed bottom-13 right-5 z-30 flex size-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 transition duration-200 hover:scale-105 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 ${isOpen ? 'max-sm:hidden' : ''}`} aria-label={isOpen ? 'Close chat' : 'Open chat'}>
         {isOpen ? <X className="size-5" /> : <MessageCircle className="size-6" />}
         <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-emerald-400/40" />
       </button>
@@ -569,7 +569,9 @@ function Nav({ chatOpen, onOpenChat }: { chatOpen: boolean; onOpenChat: () => vo
       <nav className={`sticky top-0 z-40 w-full transition-all duration-300 ${chatOpen ? 'max-sm:hidden' : ''} ${scrolled ? 'border-b border-white/8 bg-[#020c07]/90 backdrop-blur-md shadow-lg shadow-black/20' : 'bg-transparent'}`}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:py-5 lg:px-8">
           <div className="flex items-center gap-1.5">
-            <BrandMark />
+            <div className="-translate-y-[5px]">
+              <BrandMark />
+            </div>
             <span className="font-baloo2 text-3xl font-extrabold text-emerald-400">eehu!</span>
           </div>
 
@@ -962,8 +964,8 @@ export default function Page() {
 
       <ChatWidget isOpen={chatOpen} setIsOpen={setChatOpen} />
       <footer className="border-t border-white/10 bg-[#020c07]">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <p>eehu! helps you keep track of website enquiries.</p>
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-6 text-center text-sm text-slate-500 lg:px-8">
+          <p>eehu! helps you keep track of leads.</p>
           <nav aria-label="Legal" className="flex items-center gap-5">
             <a href="/privacy" className="transition hover:text-emerald-300">Privacy Policy</a>
             <a href="/terms" className="transition hover:text-emerald-300">Terms of Use</a>
