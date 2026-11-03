@@ -832,9 +832,6 @@ export default function Page() {
       <section className="relative mx-auto grid max-w-6xl gap-14 px-6 pb-24 pt-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-8 lg:pb-32 lg:pt-20">
         <div className="absolute -left-32 top-0 size-125 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="relative" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) both' }}>
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-400">
-            Website enquiry-to-customer pipeline
-          </p>
           <h1 className="max-w-2xl text-5xl font-extrabold leading-[1.02] tracking-tighter text-white sm:text-6xl lg:text-7xl">
             Stop losing leads in <span className="text-emerald-400">your chats.</span>
           </h1>

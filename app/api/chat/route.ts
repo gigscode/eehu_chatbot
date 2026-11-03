@@ -1,25 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/supabase'
 
-const SYSTEM_PROMPT = `You are the eehu! support assistant. eehu! is a service that builds and integrates live chat widgets into existing business websites.
+const SYSTEM_PROMPT = `You are the eehu! support assistant. eehu! helps service businesses capture website enquiries, organize leads, and follow up before valuable opportunities disappear.
 
-YOUR ONLY JOB is to help visitors understand eehu! and how live chat can work for their business. Answer specific questions and use cases when they relate to eehu!, setting up the widget, or using it to support their customers.
+YOUR ONLY JOB is to help visitors understand eehu! as a website lead-capture and follow-up system, not just a chatbot. Answer questions about how eehu! helps a business collect enquiries, track leads, manage follow-ups, and turn website visitors into paying customers.
 
-If someone asks about anything unrelated to eehu! or live chat for their business, such as general coding help, other products, news, personal advice, math problems, or any other topic, politely decline and bring the conversation back to eehu!. Example: "I can only help with questions about eehu! and how live chat can help your business. Is there something I can help you with on that front?"
+If someone asks about anything unrelated to eehu! or business lead capture, such as general coding help, other products, news, personal advice, math problems, or any other topic, politely decline and bring the conversation back to eehu!. Example: "I can only help with questions about eehu! and how it helps businesses capture and follow up on leads. Is there something I can help you with on that front?"
 
 NEVER answer off-topic questions even if the user insists.
 
 What eehu! does:
-- Builds and integrates a live chat widget into a business's existing website
-- The business does not need to rebuild their site or hire a developer
-- The chat is customised to match the business's brand and voice
-- Customers can start a conversation any time; the business replies when ready
-- It shows businesses what questions their website keeps failing to answer
+- Captures enquiries from a business's website before visitors disappear
+- Stores each lead in one simple system instead of burying conversations in WhatsApp chats
+- Makes it easy to know who needs a follow-up today
+- Tracks quote requests, conversations, and sales progress in one place
+- Helps businesses close more deals from website traffic
 
 How to respond:
 - Keep replies short, warm, and plain. No jargon.
 - Speak like a helpful person, not a product manual.
-- If someone asks about pricing, say the team will share details personally and ask them to leave their contact or website.
+- If someone asks about pricing, say the team will share details personally and ask for their contact or website.
 - If someone wants to get started, ask for their website URL and a brief description of their business.
 - If someone asks to speak to a human, a real person, or says they prefer human support, respond with exactly this text and nothing else: ESCALATE_TO_HUMAN
 - Always be friendly and brief.`
@@ -73,7 +73,7 @@ function getKnowledgeBaseReply(query: string): string {
     q.includes('what is eehu') ||
     q.includes('how does eehu work')
   ) {
-    return 'eehu! designs and adds a custom live chat widget directly into your existing website. Your visitors can ask questions or request support at any time, and your team can reply when ready. You do not need to redesign your site or hire a developer. We handle the integration from start to finish.'
+    return 'eehu! helps businesses capture website enquiries, organise each lead, and follow up before valuable opportunities disappear. It starts with the chat on your site and turns it into a trackable sales lead instead of another lost WhatsApp message.'
   }
 
   if (
@@ -90,7 +90,7 @@ function getKnowledgeBaseReply(query: string): string {
     q.includes('wix') ||
     q.includes('squarespace')
   ) {
-    return 'We handle the entire setup for you. We provide a lightweight, single-line snippet designed for your site (WordPress, Shopify, Webflow, Squarespace, Wix, or custom HTML), or our team can install it directly for you. You do not need any coding knowledge.'
+    return 'We handle the setup for you. We connect the system to your website and make sure the chat is set up to capture leads, track enquiries, and keep follow-ups organised. You do not need to rebuild your site or do the technical work yourself.'
   }
 
   if (
@@ -100,7 +100,7 @@ function getKnowledgeBaseReply(query: string): string {
     q.includes('setup time') ||
     q.includes('turnaround')
   ) {
-    return 'Setup is typically complete within 24 to 48 hours. We customize the widget colors, branding, and messaging to match your company, test everything thoroughly, and confirm it runs cleanly on your website before launching.'
+    return 'Setup is usually quick. We look at your site, match the branding, and get the system working so your business can start capturing leads without slowing down your team.'
   }
 
   if (
@@ -111,7 +111,7 @@ function getKnowledgeBaseReply(query: string): string {
     q.includes('cost') ||
     q.includes('rates')
   ) {
-    return 'We provide simple, transparent pricing tailored to your website and support needs. Share your website URL and contact details with us here, or tap "I want to talk to a real person" to discuss pricing directly with our team on WhatsApp.'
+    return 'We tailor the setup to your business and website. Share your website URL and what you do, and our team will walk you through the right package and pricing.'
   }
 
   if (
@@ -121,7 +121,7 @@ function getKnowledgeBaseReply(query: string): string {
     q.includes('demo') ||
     q.includes('sample')
   ) {
-    return 'You are using an example right now. This chat widget in the corner is eehu! running live. We customize the branding, colors, greeting, and conversation flow to match each client.'
+    return 'You are using an example right now. This chat is an eehu! flow built to capture enquiries and guide visitors toward a helpful next step.'
   }
 
   if (
@@ -130,11 +130,11 @@ function getKnowledgeBaseReply(query: string): string {
     q.includes('how to start') ||
     q.includes('onboard')
   ) {
-    return 'Getting started is simple. Tell us your website URL and a brief note about what your business offers. Our team will review your site and guide you through the setup.'
+    return 'Getting started is simple. Send us your website URL and a short note about your business, and we will tell you the best way to get the system running.'
   }
 
   // Fallback for general inquiries
-  return 'Thanks for reaching out! eehu! builds and integrates live chat widgets directly into your existing website without requiring code changes from your team. If you have questions about your site or want to explore adding live chat, please share your website URL or tap "I want to talk to a real person" to connect with our team on WhatsApp.'
+  return 'Thanks for reaching out! eehu! helps businesses capture website enquiries, organise leads, and follow up before opportunities disappear. If you want to see how it could work for your business, share your website URL or tap "I want to talk to a real person" and we will take it from there.'
 }
 
 async function callGemini(
