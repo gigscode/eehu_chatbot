@@ -3,7 +3,7 @@
 -- Stores each chat session
 create table if not exists conversations (
   id uuid primary key default gen_random_uuid(),
-  session_id text not null,
+  session_id text not null unique,
   created_at timestamptz default now()
 );
 
@@ -18,7 +18,7 @@ create table if not exists messages (
 
 -- Index for fast lookup by session
 create index if not exists messages_session_id_idx on messages (session_id);
-create index if not exists conversations_session_id_idx on conversations (session_id);
+create unique index if not exists conversations_session_id_idx on conversations (session_id);
 
 -- Enable Row Level Security (read-only from the browser, writes only via service role)
 alter table conversations enable row level security;

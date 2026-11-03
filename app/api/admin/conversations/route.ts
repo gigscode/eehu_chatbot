@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { timingSafeEqual, createHash } from 'crypto'
 
 // Admin route uses the service role key so it can read all data
 function getAdminClient() {
@@ -9,17 +10,30 @@ function getAdminClient() {
   return createClient(url, serviceKey, { auth: { persistSession: false } })
 }
 
+// Constant-time comparison to prevent timing attacks on the admin secret
+function verifySecret(provided: string, expected: string): boolean {
+  try {
+    const a = createHash('sha256').update(provided).digest()
+    const b = createHash('sha256').update(expected).digest()
+    return timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
+}
+
+const NO_STORE = { 'Cache-Control': 'no-store' }
+
 export async function GET(req: NextRequest) {
-  // Simple token auth — check for admin secret in header
+  // Constant-time secret verification to prevent timing attacks
   const adminSecret = process.env.ADMIN_SECRET
   const token = req.headers.get('x-admin-secret')
-  if (!adminSecret || token !== adminSecret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!adminSecret || !token || !verifySecret(token, adminSecret)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE })
   }
 
   const db = getAdminClient()
   if (!db) {
-    return NextResponse.json({ error: 'Database not configured.' }, { status: 500 })
+    return NextResponse.json({ error: 'Database not configured.' }, { status: 500, headers: NO_STORE })
   }
 
   // Fetch all conversations with their messages
@@ -30,7 +44,7 @@ export async function GET(req: NextRequest) {
     .limit(100)
 
   if (convErr) {
-    return NextResponse.json({ error: convErr.message }, { status: 500 })
+    return NextResponse.json({ error: convErr.message }, { status: 500, headers: NO_STORE })
   }
 
   // Fetch messages for all sessions
@@ -42,7 +56,7 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: true })
 
   if (msgErr) {
-    return NextResponse.json({ error: msgErr.message }, { status: 500 })
+    return NextResponse.json({ error: msgErr.message }, { status: 500, headers: NO_STORE })
   }
 
   // Group messages by session_id
@@ -51,5 +65,5 @@ export async function GET(req: NextRequest) {
     messages: messages.filter((m) => m.session_id === conv.session_id),
   }))
 
-  return NextResponse.json({ conversations: grouped })
+  return NextResponse.json({ conversations: grouped }, { headers: NO_STORE })
 }

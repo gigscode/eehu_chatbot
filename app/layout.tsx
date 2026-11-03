@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Nunito, Baloo_2 } from 'next/font/google'
 import './globals.css'
+import PwaInstall from './components/PwaInstall'
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -18,6 +19,7 @@ const baloo2 = Baloo_2({
 export const metadata: Metadata = {
   title: 'eehu!. Customer conversations, built into your website',
   description: 'eehu! is an enterprise-grade support chat layer for existing websites, helping businesses answer customers and convert more demand.',
+  manifest: '/manifest.json',
   icons: {
     icon: '/Glossy Emerald Eehu Chat icon.png',
     apple: '/Glossy Emerald Eehu Chat icon.png',
@@ -38,6 +40,7 @@ export default function RootLayout({
     <html lang="en" className={`${nunito.variable} ${baloo2.variable}`}>
       <body className="antialiased font-nunito">
         {children}
+        <PwaInstall />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

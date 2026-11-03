@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import {
   ArrowRight,
   CheckCheck,
@@ -30,7 +31,16 @@ const initialMessages: Message[] = [
 const eehuLogoUrl = '/Glossy Emerald Eehu Chat icon.png'
 
 function BrandMark({ small = false }: { small?: boolean }) {
-  return <img src={eehuLogoUrl} alt="eehu!" className={`shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,120,40,0.2)] ${small ? 'size-9' : 'size-12'}`} />
+  return (
+    <Image
+      src={eehuLogoUrl}
+      alt="eehu!"
+      width={small ? 36 : 48}
+      height={small ? 36 : 48}
+      priority
+      className={`shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,120,40,0.2)] ${small ? 'size-9' : 'size-12'}`}
+    />
+  )
 }
 
 function playSendSound() {
@@ -301,9 +311,16 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
   const historyRef = useRef<{ role: 'user' | 'model'; text: string }[]>([])
   // Stable session ID for this browser tab, persists across widget open and close
   const sessionIdRef = useRef<string>(
-    typeof crypto !== 'undefined'
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
       ? crypto.randomUUID()
-      : `session-${Date.now()}`
+      : '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
+          (
+            Number(c) ^
+            (typeof crypto !== 'undefined' && crypto.getRandomValues
+              ? crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4))
+              : (Math.random() * 16) | 0)
+          ).toString(16)
+        )
   )
 
   const resetChat = () => {
@@ -332,6 +349,12 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
         body: JSON.stringify({ messages: historyRef.current, sessionId: sessionIdRef.current }),
       })
       const data = await res.json()
+
+      if (!res.ok) {
+        const errorMsg = data.error || 'Unable to send message. Please try again shortly.'
+        setMessages((c) => [...c, { id: Date.now() + 1, text: errorMsg, sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
+        return
+      }
 
       if (data.escalate) {
         // Show WhatsApp escalation card
@@ -363,7 +386,7 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
     <>
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.08),transparent_42%)]" />
       {isOpen && (
-        <section className="fixed bottom-24 right-5 z-20 flex h-[min(660px,calc(100vh-7.5rem))] w-[420px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:z-[60] max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support">
+        <section className="fixed bottom-24 right-5 z-20 flex h-[min(660px,calc(100vh-7.5rem))] w-105 max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:z-60 max-sm:h-dvh max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support">
           <ChatHeader
             onClose={() => setIsOpen(false)}
             onReset={resetChat}
@@ -406,7 +429,7 @@ function Nav({ chatOpen, onOpenChat }: { chatOpen: boolean; onOpenChat: () => vo
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
   return (
-    <nav className={`sticky top-0 z-50 w-full transition-all duration-300 ${chatOpen ? 'max-sm:hidden' : ''} ${scrolled ? 'border-b border-white/[0.08] bg-[#020c07]/80 backdrop-blur-md' : ''}`}>
+    <nav className={`sticky top-0 z-50 w-full transition-all duration-300 ${chatOpen ? 'max-sm:hidden' : ''} ${scrolled ? 'border-b border-white/8 bg-[#020c07]/80 backdrop-blur-md' : ''}`}>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 lg:px-8">
         <div className="flex items-center gap-1.5">
           <BrandMark />
@@ -438,7 +461,7 @@ function HeroMock() {
       style={{ animation: 'slide-in-right 0.7s cubic-bezier(0.22,1,0.36,1) 0.3s both, float 6s ease-in-out 1.2s infinite' }}
     >
       <div className="absolute inset-6 rounded-[1.5rem] border border-white/5 bg-white/5" />
-      <div className="relative flex h-full min-h-[360px] flex-col justify-between rounded-2xl border border-white/10 bg-slate-900/80 p-5 shadow-xl backdrop-blur-sm sm:p-7">
+      <div className="relative flex h-full min-h-90 flex-col justify-between rounded-2xl border border-white/10 bg-slate-900/80 p-5 shadow-xl backdrop-blur-sm sm:p-7">
         <div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-400"><span className="size-2 rounded-full bg-emerald-400" /> YOUR WEBSITE</div>
@@ -492,9 +515,9 @@ function HeroMock() {
 
 function FeatureCard({ index, title, children, className = '' }: { index: string; title: string; children: string; className?: string }) {
   return (
-    <article className={`rounded-[1.35rem] border border-white/5 bg-white/5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07] hover:shadow-xl hover:shadow-emerald-900/20 ${className}`}>
+    <article className={`rounded-[1.35rem] border border-white/5 bg-white/5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7 hover:shadow-xl hover:shadow-emerald-900/20 ${className}`}>
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-400">{index}</p>
-      <h3 className="mt-8 font-extrabold tracking-[-0.035em] text-white">{title}</h3>
+      <h3 className="mt-8 font-extrabold -tracking-[0.035em] text-white">{title}</h3>
       <p className="mt-3 leading-7 text-slate-400">{children}</p>
     </article>
   )
@@ -510,9 +533,9 @@ export default function Page() {
 
       {/* Hero */}
       <section className="relative mx-auto grid max-w-6xl gap-14 px-6 pb-24 pt-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-8 lg:pb-32 lg:pt-20">
-        <div className="absolute -left-32 top-0 size-[500px] rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute -left-32 top-0 size-125 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="relative" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) both' }}>
-          <h1 className="max-w-2xl text-5xl font-extrabold leading-[1.02] tracking-[-0.05em] text-white sm:text-6xl lg:text-7xl">
+          <h1 className="max-w-2xl text-5xl font-extrabold leading-[1.02] -tracking-[0.05em] text-white sm:text-6xl lg:text-7xl">
             We add live chat to your <span className="text-emerald-400">existing website.</span>
           </h1>
           <p className="mt-7 max-w-xl text-xl leading-9 text-slate-300" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.12s both' }}>
@@ -540,25 +563,25 @@ export default function Page() {
       <section id="features" className="mx-auto max-w-6xl px-6 pb-24 lg:px-8">
         <div className="mb-12 max-w-xl">
           <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">What eehu! does for your business</p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">Stop losing customers who had questions.</h2>
+          <h2 className="mt-4 text-4xl font-extrabold -tracking-[0.04em] text-white sm:text-5xl">Stop losing customers who had questions.</h2>
         </div>
         <div className="grid items-end gap-4 md:grid-cols-[1.4fr_1fr_1.2fr]">
-          <FeatureCard index="01 / The rescue" title="Catch people before they walk away" className="p-9 text-lg min-h-[280px] md:min-h-[320px]">When someone stops on your pricing page or goes quiet during checkout, eehu! gives them a way to ask. Most of the time, one answer is all it takes.</FeatureCard>
-          <FeatureCard index="02 / The memory" title="Your team picks up where the chat left off" className="p-6 text-sm min-h-[220px] md:-translate-y-10">No more "can you explain your issue again?" Your team sees exactly what the customer asked, so every conversation starts in the right place.</FeatureCard>
+          <FeatureCard index="01 / The rescue" title="Catch people before they walk away" className="p-9 text-lg min-h-70 md:min-h-80">When someone stops on your pricing page or goes quiet during checkout, eehu! gives them a way to ask. Most of the time, one answer is all it takes.</FeatureCard>
+          <FeatureCard index="02 / The memory" title="Your team picks up where the chat left off" className="p-6 text-sm min-h-55 md:-translate-y-10">No more "can you explain your issue again?" Your team sees exactly what the customer asked, so every conversation starts in the right place.</FeatureCard>
           <FeatureCard index="03 / The signal" title="Find out what your website is failing to say" className="p-8 text-base min-h-[250px] md:translate-y-6 md:min-h-[270px]">When the same question keeps coming up, that is a gap in your website. eehu! shows you where, so you can fix it.</FeatureCard>
         </div>
       </section>
 
       {/* Benefits */}
-      <section id="benefits" className="border-y border-white/5 bg-white/[0.03]">
+      <section id="benefits" className="border-y border-white/5 bg-white/3">
         <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">No tech headaches</p>
-            <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">We handle the whole setup. You just talk to customers.</h2>
+            <h2 className="mt-4 text-4xl font-extrabold -tracking-[0.04em] text-white sm:text-5xl">We handle the whole setup. You just talk to customers.</h2>
             <p className="mt-5 max-w-md text-lg leading-8 text-slate-400">You do not need to change your website, hire a developer, or learn new software. We add the chat to your site and you are ready to go.</p>
           </div>
           <div className="grid items-end gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/5 bg-white/5 p-8 min-h-[220px] transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07]">
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-8 min-h-55 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
                 <path d="M40 8 C55 5, 72 18, 74 35 C76 52, 63 70, 46 73 C29 76, 10 65, 7 48 C4 31, 18 11, 40 8Z" fill="rgba(52,211,153,0.18)" />
                 <path d="M40 8 C55 5, 72 18, 74 35 C76 52, 63 70, 46 73 C29 76, 10 65, 7 48 C4 31, 18 11, 40 8Z" fill="none" stroke="rgba(52,211,153,0.35)" strokeWidth="1.5" />
@@ -567,7 +590,7 @@ export default function Page() {
               <h3 className="mt-6 text-lg font-extrabold text-white">We set it up for you</h3>
               <p className="mt-2 text-sm leading-6 text-slate-400">Tell us about your business and we build and add the chat to your site. No technical work on your end.</p>
             </div>
-            <div className="rounded-2xl border border-white/5 bg-white/5 p-6 min-h-[180px] sm:translate-y-4 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07]">
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-6 min-h-45 sm:translate-y-4 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
                 <path d="M38 6 C56 2, 75 16, 76 36 C77 56, 60 74, 40 75 C20 76, 4 60, 5 40 C6 20, 20 10, 38 6Z" fill="rgba(16,185,129,0.15)" />
                 <path d="M38 6 C56 2, 75 16, 76 36 C77 56, 60 74, 40 75 C20 76, 4 60, 5 40 C6 20, 20 10, 38 6Z" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1.5" />
@@ -576,7 +599,7 @@ export default function Page() {
               <h3 className="mt-6 text-base font-extrabold text-white">Looks like it belongs</h3>
               <p className="mt-2 text-sm leading-6 text-slate-400">The chat uses your brand colours and voice. Customers will not know it was added by a third party.</p>
             </div>
-            <div className="rounded-2xl border border-white/5 bg-white/5 p-6 min-h-[190px] sm:-translate-y-3 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07]">
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-6 min-h-[190px] sm:-translate-y-3 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
                 <path d="M42 5 C62 8, 77 24, 75 44 C73 64, 56 78, 36 76 C16 74, 3 57, 5 37 C7 17, 22 2, 42 5Z" fill="rgba(5,150,105,0.18)" />
                 <path d="M42 5 C62 8, 77 24, 75 44 C73 64, 56 78, 36 76 C16 74, 3 57, 5 37 C7 17, 22 2, 42 5Z" fill="none" stroke="rgba(5,150,105,0.35)" strokeWidth="1.5" />
@@ -585,7 +608,7 @@ export default function Page() {
               <h3 className="mt-6 text-base font-extrabold text-white">Available around the clock</h3>
               <p className="mt-2 text-sm leading-6 text-slate-400">Customers can start a conversation at any time. You reply when you are ready, at your own pace.</p>
             </div>
-            <div className="rounded-2xl border border-white/5 bg-white/5 p-9 min-h-[240px] transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/[0.07]">
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-9 min-h-60 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
                 <path d="M36 4 C58 0, 78 18, 77 40 C76 62, 58 79, 36 78 C14 77, -1 60, 3 38 C7 16, 14 8, 36 4Z" fill="rgba(52,211,153,0.12)" />
                 <path d="M36 4 C58 0, 78 18, 77 40 C76 62, 58 79, 36 78 C14 77, -1 60, 3 38 C7 16, 14 8, 36 4Z" fill="none" stroke="rgba(52,211,153,0.28)" strokeWidth="1.5" />
@@ -601,7 +624,7 @@ export default function Page() {
       {/* CTA */}
       <section id="install" className="mx-auto max-w-6xl px-6 py-20 text-center lg:px-8">
         <div className="mx-auto max-w-2xl rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5 px-6 py-14 shadow-2xl shadow-emerald-900/20 sm:px-12">
-          <h2 className="text-4xl font-extrabold tracking-[-0.04em] text-white sm:text-5xl">Ready to talk to more of your customers?</h2>
+          <h2 className="text-4xl font-extrabold -tracking-[0.04em] text-white sm:text-5xl">Ready to talk to more of your customers?</h2>
           <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-slate-300">Try the chat in the corner. That is exactly what your visitors will see on your site.</p>
           <button type="button" onClick={() => { setChatOpen(true); setTimeout(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus(), 100) }} className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">
             Start a conversation <ArrowRight className="size-4" />

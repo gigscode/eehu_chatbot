@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -77,6 +78,15 @@ export default function AdminPage() {
     router.push('/')
   }
 
+  // 30-minute idle session timeout
+  useEffect(() => {
+    if (!authed) return
+    const timer = setTimeout(() => {
+      handleSignOut()
+    }, 30 * 60 * 1000)
+    return () => clearTimeout(timer)
+  }, [authed, conversations])
+
   const totalMessages = conversations.reduce((acc, c) => acc + c.messages.length, 0)
   const userMessages = conversations.reduce(
     (acc, c) => acc + c.messages.filter((m) => m.role === 'user').length,
@@ -94,9 +104,12 @@ export default function AdminPage() {
           className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-8"
         >
           <div className="flex items-center gap-2.5 mb-6">
-            <img
+            <Image
               src={eehuLogoUrl}
               alt="eehu!"
+              width={36}
+              height={36}
+              priority
               className="size-9 object-contain shrink-0 drop-shadow-[0_8px_14px_rgba(0,120,40,0.2)]"
             />
             <span
@@ -155,12 +168,15 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#020c07] text-white">
       {/* Header */}
-      <header className="border-b border-white/5 bg-white/[0.02] px-6 py-4">
+      <header className="border-b border-white/5 bg-white/2 px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <img
+            <Image
               src={eehuLogoUrl}
               alt="eehu!"
+              width={32}
+              height={32}
+              priority
               className="size-8 object-contain shrink-0 drop-shadow-[0_8px_14px_rgba(0,120,40,0.2)]"
             />
             <span
@@ -233,7 +249,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setExpanded(isOpen ? null : conv.session_id)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-white/[0.04]"
+                  className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-white/4"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

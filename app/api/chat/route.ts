@@ -144,12 +144,21 @@ async function callGemini(
   apiVersion = 'v1beta'
 ): Promise<{ data: GeminiResponse } | { status: number; message: string }> {
   const url = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent`
+
+  // AQ. prefix keys are the new Google Authorization Key format (introduced May 2026).
+  // They must be sent as Bearer tokens, not as x-goog-api-key header values.
+  const isAuthKey = apiKey.startsWith('AQ.')
+  const authHeaders: Record<string, string> = isAuthKey
+    ? { Authorization: `Bearer ${apiKey}` }
+    : { 'x-goog-api-key': apiKey }
+
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey,
+      ...authHeaders,
     },
+    signal: AbortSignal.timeout(9000),
     body: JSON.stringify({
       system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents,
@@ -199,39 +208,68 @@ async function getGeminiReply(apiKey: string, contents: object[]): Promise<strin
   throw new Error('No supported Gemini model was found for this configuration.')
 }
 
+// Cache known session IDs in memory to avoid a redundant upsert on every message.
+// This resets on cold start, which is acceptable: the upsert is idempotent.
+const knownSessions = new Set<string>()
+
 async function saveMessage(sessionId: string, role: 'user' | 'agent', text: string) {
   try {
     const db = getSupabase()
     if (!db || !sessionId) return
-    await db.from('conversations').upsert({ session_id: sessionId }, { onConflict: 'session_id' })
+    if (!knownSessions.has(sessionId)) {
+      await db.from('conversations').upsert({ session_id: sessionId }, { onConflict: 'session_id' })
+      knownSessions.add(sessionId)
+    }
     await db.from('messages').insert({ session_id: sessionId, role, text })
   } catch (err) {
     console.warn('Database save error:', err)
   }
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const NO_STORE = { 'Cache-Control': 'no-store' }
+
 export async function POST(req: NextRequest) {
   const apiKey = (process.env.GEMINI_API_KEY ?? '').trim()
 
-  const { messages, sessionId } = (await req.json()) as {
+  let body: { messages?: unknown; sessionId?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400, headers: NO_STORE })
+  }
+
+  const { messages, sessionId } = body as {
     messages: { role: 'user' | 'model'; text: string }[]
     sessionId: string
   }
 
-  if (!messages || messages.length === 0) {
-    return NextResponse.json({ error: 'No messages provided.' }, { status: 400 })
+  // Input validation
+  if (typeof sessionId !== 'string' || !UUID_RE.test(sessionId)) {
+    return NextResponse.json({ error: 'Invalid session ID.' }, { status: 400, headers: NO_STORE })
+  }
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return NextResponse.json({ error: 'No messages provided.' }, { status: 400, headers: NO_STORE })
+  }
+  if (messages.length > 50) {
+    return NextResponse.json({ error: 'Message history too long.' }, { status: 400, headers: NO_STORE })
+  }
+  const lastText = messages[messages.length - 1]?.text ?? ''
+  if (typeof lastText !== 'string' || lastText.trim().length === 0) {
+    return NextResponse.json({ error: 'Last message is empty.' }, { status: 400, headers: NO_STORE })
+  }
+  if (lastText.length > 2000) {
+    return NextResponse.json({ error: 'Message too long. Please keep it under 2000 characters.' }, { status: 400, headers: NO_STORE })
   }
 
-  const latestUserMessage = messages[messages.length - 1]
-
   // Persist user message asynchronously
-  void saveMessage(sessionId, 'user', latestUserMessage.text)
+  void saveMessage(sessionId, 'user', lastText)
 
   // 1. Instant check for human escalation requests
-  if (isHumanEscalation(latestUserMessage.text)) {
+  if (isHumanEscalation(lastText)) {
     const escalateReply = 'No problem at all! Click below to chat with a real person on WhatsApp right now.'
     void saveMessage(sessionId, 'agent', escalateReply)
-    return NextResponse.json({ reply: '', escalate: true })
+    return NextResponse.json({ reply: '', escalate: true }, { headers: NO_STORE })
   }
 
   // 2. Attempt Gemini generation if API key is present
@@ -258,7 +296,7 @@ export async function POST(req: NextRequest) {
 
   // 3. Fall back to built-in knowledge base if Gemini was unavailable or threw an error
   if (!escalate && !replyText) {
-    replyText = getKnowledgeBaseReply(latestUserMessage.text)
+    replyText = getKnowledgeBaseReply(lastText)
   }
 
   const agentReply = escalate
@@ -268,8 +306,11 @@ export async function POST(req: NextRequest) {
   // Persist agent reply asynchronously
   void saveMessage(sessionId, 'agent', agentReply)
 
-  return NextResponse.json({
-    reply: escalate ? '' : agentReply,
-    escalate,
-  })
+  return NextResponse.json(
+    {
+      reply: escalate ? '' : agentReply,
+      escalate,
+    },
+    { headers: NO_STORE }
+  )
 }
