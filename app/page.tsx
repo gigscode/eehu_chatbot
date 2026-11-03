@@ -180,6 +180,12 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
   const [showWhatsApp, setShowWhatsApp] = useState(false)
   const [showQuickReplies, setShowQuickReplies] = useState(true)
   const historyRef = useRef<{ role: 'user' | 'model'; text: string }[]>([])
+  // Stable session ID for this browser tab — persists across widget open/close
+  const sessionIdRef = useRef<string>(
+    typeof crypto !== 'undefined'
+      ? crypto.randomUUID()
+      : `session-${Date.now()}`
+  )
 
   const resetChat = () => {
     setMessages(initialMessages)
@@ -199,7 +205,7 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: historyRef.current }),
+        body: JSON.stringify({ messages: historyRef.current, sessionId: sessionIdRef.current }),
       })
       const data = await res.json()
 
