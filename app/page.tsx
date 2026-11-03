@@ -8,6 +8,8 @@ import {
   MessageCircle,
   Paperclip,
   Send,
+  Volume2,
+  VolumeX,
   X,
 } from 'lucide-react'
 
@@ -31,7 +33,81 @@ function BrandMark({ small = false }: { small?: boolean }) {
   return <img src={eehuLogoUrl} alt="eehu!" className={`shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,120,40,0.2)] ${small ? 'size-9' : 'size-12'}`} />
 }
 
-function ChatHeader({ onClose, onReset }: { onClose: () => void; onReset: () => void }) {
+function playSendSound() {
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    if (!AudioContextClass) return
+    const ctx = new AudioContextClass()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(420, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(780, ctx.currentTime + 0.05)
+
+    gain.gain.setValueAtTime(0.08, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.05)
+  } catch {
+    // Audio playback blocked or unsupported
+  }
+}
+
+function playReceiveSound() {
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    if (!AudioContextClass) return
+    const ctx = new AudioContextClass()
+    const now = ctx.currentTime
+
+    // First tone: D5 (587.33 Hz)
+    const osc1 = ctx.createOscillator()
+    const gain1 = ctx.createGain()
+    osc1.type = 'sine'
+    osc1.frequency.setValueAtTime(587.33, now)
+    gain1.gain.setValueAtTime(0.12, now)
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.14)
+    osc1.connect(gain1)
+    gain1.connect(ctx.destination)
+    osc1.start(now)
+    osc1.stop(now + 0.14)
+
+    // Second tone: A5 (880 Hz)
+    const osc2 = ctx.createOscillator()
+    const gain2 = ctx.createGain()
+    osc2.type = 'sine'
+    osc2.frequency.setValueAtTime(880, now + 0.07)
+    gain2.gain.setValueAtTime(0.12, now + 0.07)
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.28)
+    osc2.connect(gain2)
+    gain2.connect(ctx.destination)
+    osc2.start(now + 0.07)
+    osc2.stop(now + 0.28)
+  } catch {
+    // Audio playback blocked or unsupported
+  }
+}
+
+function ChatHeader({
+  onClose,
+  onReset,
+  soundEnabled,
+  onToggleSound,
+}: {
+  onClose: () => void
+  onReset: () => void
+  soundEnabled: boolean
+  onToggleSound: () => void
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const copyChatLink = async () => {
     await navigator.clipboard?.writeText(window.location.href)
@@ -49,11 +125,40 @@ function ChatHeader({ onClose, onReset }: { onClose: () => void; onReset: () => 
         </div>
       </div>
       <div className="relative flex items-center gap-1 text-slate-400">
+        <button
+          type="button"
+          onClick={onToggleSound}
+          className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700"
+          aria-label={soundEnabled ? 'Mute sound' : 'Enable sound'}
+          title={soundEnabled ? 'Mute sound' : 'Enable sound'}
+        >
+          {soundEnabled ? (
+            <Volume2 className="size-5 text-emerald-600" />
+          ) : (
+            <VolumeX className="size-5 text-slate-400" />
+          )}
+        </button>
         <button type="button" onClick={() => setIsMenuOpen((o) => !o)} className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="More options" aria-expanded={isMenuOpen} aria-haspopup="menu"><Ellipsis className="size-5" /></button>
         <button type="button" onClick={onClose} className="rounded-lg p-2 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Close chat"><X className="size-5" /></button>
         {isMenuOpen && (
-          <div role="menu" aria-label="Chat options" className="absolute right-0 top-10 z-30 w-44 rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl shadow-slate-900/10">
+          <div role="menu" aria-label="Chat options" className="absolute right-0 top-10 z-30 w-48 rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl shadow-slate-900/10">
             <button type="button" role="menuitem" onClick={() => { onReset(); setIsMenuOpen(false) }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700">Start a new chat</button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onToggleSound()
+                setIsMenuOpen(false)
+              }}
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700"
+            >
+              <span>{soundEnabled ? 'Mute sound' : 'Enable sound'}</span>
+              {soundEnabled ? (
+                <Volume2 className="size-4 text-emerald-600" />
+              ) : (
+                <VolumeX className="size-4 text-slate-400" />
+              )}
+            </button>
             <button type="button" role="menuitem" onClick={copyChatLink} className="w-full rounded-lg px-3 py-2 text-left font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700">Copy chat link</button>
           </div>
         )}
@@ -172,7 +277,13 @@ function MessageInput({ onSend, disabled }: { onSend: (text: string) => void; di
           className="max-h-24 min-h-7 flex-1 resize-none bg-transparent py-1 text-[15px] font-medium text-slate-800 outline-none placeholder:text-slate-400"
           aria-label="Message"
         />
-        <button type="button" onClick={submit} disabled={!text.trim() || disabled} className="mb-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400" aria-label="Send message">
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!text.trim() || disabled}
+          className="mb-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-md shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-emerald-600"
+          aria-label="Send message"
+        >
           <Send className="size-4" />
         </button>
       </div>
@@ -186,6 +297,7 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
   const [isTyping, setIsTyping] = useState(false)
   const [showWhatsApp, setShowWhatsApp] = useState(false)
   const [quickReplies, setQuickReplies] = useState<string[]>(QUICK_REPLIES)
+  const [soundEnabled, setSoundEnabled] = useState(true)
   const historyRef = useRef<{ role: 'user' | 'model'; text: string }[]>([])
   // Stable session ID for this browser tab, persists across widget open and close
   const sessionIdRef = useRef<string>(
@@ -208,6 +320,9 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
 
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     setMessages((c) => [...c, { id: Date.now(), text, sender: 'user', time: now, status: 'sent' }])
+    if (soundEnabled) {
+      playSendSound()
+    }
     setIsTyping(true)
     historyRef.current = [...historyRef.current, { role: 'user', text }]
     try {
@@ -224,10 +339,16 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
         const escalateMsg = 'No problem at all! Click below to chat with a real person on WhatsApp right now.'
         historyRef.current = [...historyRef.current, { role: 'model', text: escalateMsg }]
         setMessages((c) => [...c, { id: Date.now() + 1, text: escalateMsg, sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
+        if (soundEnabled) {
+          playReceiveSound()
+        }
       } else {
         const reply: string = data.reply || 'Thanks for reaching out! How can we help your business today?'
         historyRef.current = [...historyRef.current, { role: 'model', text: reply }]
         setMessages((c) => [...c, { id: Date.now() + 1, text: reply, sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
+        if (soundEnabled) {
+          playReceiveSound()
+        }
       }
     } catch {
       setMessages((c) => [...c, { id: Date.now() + 1, text: 'Something went wrong. Please try again.', sender: 'agent', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }])
@@ -243,7 +364,12 @@ function ChatWidget({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: React.D
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,58,237,0.08),transparent_42%)]" />
       {isOpen && (
         <section className="fixed bottom-24 right-5 z-20 flex h-[min(660px,calc(100vh-7.5rem))] w-[420px] max-w-[calc(100vw-2rem)] origin-bottom-right max-sm:inset-0 max-sm:z-[60] max-sm:h-[100dvh] max-sm:w-full max-sm:max-w-none max-sm:rounded-none animate-[chat-in_220ms_ease-out] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/15" aria-label="Chat with eehu! Support">
-          <ChatHeader onClose={() => setIsOpen(false)} onReset={resetChat} />
+          <ChatHeader
+            onClose={() => setIsOpen(false)}
+            onReset={resetChat}
+            soundEnabled={soundEnabled}
+            onToggleSound={() => setSoundEnabled((s) => !s)}
+          />
           <MessageList messages={messages} isTyping={isTyping} />
           {!showWhatsApp && (
             <QuickReplies replies={quickReplies} onSelect={sendMessage} />
