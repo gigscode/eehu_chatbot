@@ -22,7 +22,25 @@ The business owner does not write code. They do not rebuild their site. They do 
 
 ---
 
-## Critical insight on target market — be disciplined about this
+## The honest positioning (this is the one to lock in)
+
+The most dangerous assumption about eehu! is that adding AI to a website automatically creates more customers. It does not.
+
+If the business has no website traffic, a weak offer, outdated information, or nobody who follows up on leads, eehu! cannot fix those problems.
+
+The correct promise is not "never lose a customer again."
+
+It is: **"Help more of your website visitors get answers, leave their details, and reach your sales team."**
+
+That is a believable, measurable promise. Every word in it is verifiable.
+
+The best clients are not just businesses with traffic. They are businesses already drowning in unstructured enquiries — WhatsApp messages they cannot track, emails they forget to reply to, calls they miss after hours. eehu! gives them a structured version of what they are already doing badly. That is a much easier sell than convincing someone they have a problem they have not noticed yet.
+
+**Qualification question before any sales conversation:** "How many people visit your website each month? What happens when someone contacts you today?" If the answer to the second question is "nothing, we don't really follow up" — do not onboard that client. eehu! will look like it failed and you will spend months managing an unhappy reference.
+
+---
+
+
 
 The original target market was too broad: salons, schools, logistics companies, local retailers.
 

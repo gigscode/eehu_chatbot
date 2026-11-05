@@ -839,10 +839,10 @@ export default function Page() {
         <div className="absolute -left-32 top-0 size-125 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="relative" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) both' }}>
           <h1 className="max-w-2xl text-5xl font-extrabold leading-[1.02] tracking-tighter text-white sm:text-6xl lg:text-7xl">
-            Stop losing leads in <span className="text-emerald-400">your chats.</span>
+            Help more website visitors <span className="text-emerald-400">reach your team.</span>
           </h1>
           <p className="mt-7 max-w-xl text-xl leading-9 text-slate-300" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.12s both' }}>
-            Your website should do more than answer questions. eehu! captures enquiries, qualifies buyer needs before WhatsApp, and gives your team a clear follow-up queue so valuable sales opportunities do not disappear.
+            eehu! helps visitors get answers, leave their details, and reach your sales team on WhatsApp. It does not replace traffic or close deals. It makes sure the people already on your site do not leave without a way to follow up.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3" style={{ animation: 'fade-up 0.6s cubic-bezier(0.22,1,0.36,1) 0.22s both' }}>
             <button
@@ -865,8 +865,8 @@ export default function Page() {
       {/* Features */}
       <section id="features" className="mx-auto max-w-6xl px-6 pb-24 lg:px-8">
         <div className="mb-12 max-w-xl">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">How eehu! protects your pipeline</p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Every enquiry captured. Every lead followed up.</h2>
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">What eehu! actually does</p>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Three things. No more, no less.</h2>
         </div>
         <div className="grid items-end gap-5 md:grid-cols-[1.4fr_1fr_1.2fr]">
           <FeatureCard
@@ -877,7 +877,7 @@ export default function Page() {
             borderRadius="48px 32px 56px 36px / 36px 52px 32px 56px"
             className="p-8 text-lg min-h-70 md:min-h-80"
           >
-            When someone stops on your pricing or service page, eehu! invites them to ask. In business, one timely answer keeps a warm client from contacting your competitor.
+            When someone stops on your pricing or service page, eehu! invites them to ask. Most visitors leave because nobody answered a simple question. One reply at the right moment keeps them in the conversation.
           </FeatureCard>
           <FeatureCard
             num="02"
@@ -887,17 +887,17 @@ export default function Page() {
             borderRadius="32px 52px 36px 48px / 52px 36px 56px 32px"
             className="p-7 text-sm min-h-55 md:-translate-y-8"
           >
-            No more lost contacts in cluttered messaging apps. eehu! secures the visitor name, phone number, and quote details in your database before handoff.
+            Before eehu! opens WhatsApp, it asks the visitor for their name, contact, and what they need. Your team receives a structured message, not a blank "hi" they have to chase.
           </FeatureCard>
           <FeatureCard
             num="03"
             label="The follow-up queue"
-            title="Track who needs an action today"
+            title="See every enquiry in one place"
             blobPath="M42 5 C62 8, 77 24, 75 44 C73 64, 56 78, 36 76 C16 74, 3 57, 5 37 C7 17, 22 2, 42 5Z"
             borderRadius="44px 32px 56px 36px / 32px 52px 36px 56px"
             className="p-8 text-base min-h-62.5 md:translate-y-6 md:min-h-67.5"
           >
-            See every enquiry in your private pipeline board. Schedule next actions, set follow-up dates, log won deal amounts, and never let high-value quotes disappear.
+            Your admin dashboard shows every conversation, every lead detail, and every WhatsApp handoff. Nothing disappears into a notification you swiped away.
           </FeatureCard>
         </div>
       </section>
@@ -906,9 +906,9 @@ export default function Page() {
       <section id="benefits" className="border-y border-white/5 bg-white/3">
         <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">Built for businesses with real enquiry volume</p>
-            <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">We handle the whole setup. You just talk to qualified leads.</h2>
-            <p className="mt-5 max-w-md text-lg leading-8 text-slate-400">Schools, clinics, property agents, event centres. If your website gets enquiries that fall through the cracks, eehu! catches them, qualifies them, and sends them straight to your WhatsApp.</p>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">Who eehu! is built for</p>
+            <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Businesses that already get enquiries but lose too many of them.</h2>
+            <p className="mt-5 max-w-md text-lg leading-8 text-slate-400">eehu! works when your website already has real visitors and your business has a genuine offer. It helps more of those visitors get answers, leave their details, and reach your team. It does not create traffic or close deals on your behalf.</p>
           </div>
           <div className="grid items-end gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/5 bg-white/5 p-8 min-h-55 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
@@ -918,7 +918,7 @@ export default function Page() {
                 <text x="40" y="46" textAnchor="middle" fontSize="22" fontWeight="800" fill="rgb(52,211,153)" fontFamily="sans-serif">01</text>
               </svg>
               <h3 className="mt-6 text-lg font-extrabold text-white">We set it up for you</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">Tell us about your business and we build and add the chat to your site. No technical work on your end.</p>
+              <p className="mt-2 text-sm leading-6 text-slate-400">You give us your business information. We train the assistant and add it to your site. You do not touch any code.</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-white/5 p-6 min-h-45 sm:translate-y-4 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
@@ -926,8 +926,8 @@ export default function Page() {
                 <path d="M38 6 C56 2, 75 16, 76 36 C77 56, 60 74, 40 75 C20 76, 4 60, 5 40 C6 20, 20 10, 38 6Z" fill="none" stroke="rgba(16,185,129,0.3)" strokeWidth="1.5" />
                 <text x="40" y="46" textAnchor="middle" fontSize="22" fontWeight="800" fill="rgb(16,185,129)" fontFamily="sans-serif">02</text>
               </svg>
-              <h3 className="mt-6 text-base font-extrabold text-white">Looks like it belongs</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">The chat uses your brand colours and voice. Customers will not know it was added by a third party.</p>
+              <h3 className="mt-6 text-base font-extrabold text-white">Trained on your business</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">The assistant answers based on your actual services, prices, and FAQs. Not generic responses. Not hallucinations.</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-white/5 p-6 min-h-47.5 sm:-translate-y-3 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
@@ -935,8 +935,8 @@ export default function Page() {
                 <path d="M42 5 C62 8, 77 24, 75 44 C73 64, 56 78, 36 76 C16 74, 3 57, 5 37 C7 17, 22 2, 42 5Z" fill="none" stroke="rgba(5,150,105,0.35)" strokeWidth="1.5" />
                 <text x="40" y="46" textAnchor="middle" fontSize="22" fontWeight="800" fill="rgb(5,150,105)" fontFamily="sans-serif">03</text>
               </svg>
-              <h3 className="mt-6 text-base font-extrabold text-white">Available around the clock</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">Customers can start a conversation at any time. You reply when you are ready, at your own pace.</p>
+              <h3 className="mt-6 text-base font-extrabold text-white">Answers at any hour</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">Visitors ask at midnight, on weekends, during school holidays. eehu! responds. Your team follows up when they are ready.</p>
             </div>
             <div className="rounded-2xl border border-white/5 bg-white/5 p-9 min-h-60 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
               <svg viewBox="0 0 80 80" className="size-14" aria-hidden="true">
@@ -944,8 +944,8 @@ export default function Page() {
                 <path d="M36 4 C58 0, 78 18, 77 40 C76 62, 58 79, 36 78 C14 77, -1 60, 3 38 C7 16, 14 8, 36 4Z" fill="none" stroke="rgba(52,211,153,0.28)" strokeWidth="1.5" />
                 <text x="40" y="46" textAnchor="middle" fontSize="22" fontWeight="800" fill="rgb(52,211,153)" fontFamily="sans-serif">04</text>
               </svg>
-              <h3 className="mt-6 text-xl font-extrabold text-white">See what customers keep asking</h3>
-              <p className="mt-2 text-base leading-7 text-slate-400">Every conversation shows you what your customers need. Over time that tells you exactly where your business can improve.</p>
+              <h3 className="mt-6 text-xl font-extrabold text-white">A record of every enquiry</h3>
+              <p className="mt-2 text-base leading-7 text-slate-400">Every conversation, name, and contact detail is saved. Not in a WhatsApp thread you will have to scroll through. In a dashboard you can actually use.</p>
             </div>
           </div>
         </div>
@@ -954,8 +954,8 @@ export default function Page() {
       {/* CTA */}
       <section id="install" className="mx-auto max-w-6xl px-6 py-20 text-center lg:px-8">
         <div className="mx-auto max-w-2xl rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5 px-6 py-14 shadow-2xl shadow-emerald-900/20 sm:px-12">
-          <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Your next client is already on your website.</h2>
-          <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-slate-300">Try the chat below. That is exactly what your visitors will see — and what your team will receive on WhatsApp when they are ready to talk.</p>
+          <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">See exactly what your visitors will experience.</h2>
+          <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-slate-300">Try the chat widget below. Ask a question, request a human, see how the lead form works. That is exactly what eehu! looks like on your website.</p>
           <button type="button" onClick={() => { setChatOpen(true); setTimeout(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus(), 100) }} className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">
             Start a conversation <ArrowRight className="size-4" />
           </button>
