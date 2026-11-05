@@ -866,7 +866,7 @@ export default function Page() {
       <section id="features" className="mx-auto max-w-6xl px-6 pb-24 lg:px-8">
         <div className="mb-12 max-w-xl">
           <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">How eehu! protects your pipeline</p>
-          <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Every website conversation becomes a structured lead.</h2>
+          <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Every enquiry captured. Every lead followed up.</h2>
         </div>
         <div className="grid items-end gap-5 md:grid-cols-[1.4fr_1fr_1.2fr]">
           <FeatureCard
@@ -906,9 +906,9 @@ export default function Page() {
       <section id="benefits" className="border-y border-white/5 bg-white/3">
         <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">No tech headaches</p>
-            <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">We handle the whole setup. You just talk to customers.</h2>
-            <p className="mt-5 max-w-md text-lg leading-8 text-slate-400">You do not need to change your website, hire a developer, or learn new software. We add the chat to your site and you are ready to go.</p>
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-400">Built for businesses with real enquiry volume</p>
+            <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">We handle the whole setup. You just talk to qualified leads.</h2>
+            <p className="mt-5 max-w-md text-lg leading-8 text-slate-400">Schools, clinics, property agents, event centres. If your website gets enquiries that fall through the cracks, eehu! catches them, qualifies them, and sends them straight to your WhatsApp.</p>
           </div>
           <div className="grid items-end gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/5 bg-white/5 p-8 min-h-55 transition duration-200 hover:-translate-y-1 hover:border-emerald-500/20 hover:bg-white/7">
@@ -954,8 +954,8 @@ export default function Page() {
       {/* CTA */}
       <section id="install" className="mx-auto max-w-6xl px-6 py-20 text-center lg:px-8">
         <div className="mx-auto max-w-2xl rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5 px-6 py-14 shadow-2xl shadow-emerald-900/20 sm:px-12">
-          <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Ready to talk to more of your customers?</h2>
-          <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-slate-300">Try the chat in the corner. That is exactly what your visitors will see on your site.</p>
+          <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">Your next client is already on your website.</h2>
+          <p className="mx-auto mt-5 max-w-lg text-lg leading-8 text-slate-300">Try the chat below. That is exactly what your visitors will see — and what your team will receive on WhatsApp when they are ready to talk.</p>
           <button type="button" onClick={() => { setChatOpen(true); setTimeout(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message"]')?.focus(), 100) }} className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-500/25 transition hover:bg-emerald-400">
             Start a conversation <ArrowRight className="size-4" />
           </button>

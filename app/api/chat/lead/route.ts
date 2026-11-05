@@ -1,55 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 
-const NO_STORE = { 'Cache-Control': 'no-store' }
-
-const SESSION_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) return null
+  return createClient(url, serviceKey, { auth: { persistSession: false } })
+}
 
 export async function POST(req: NextRequest) {
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400, headers: NO_STORE })
+  const { sessionId, leadName, leadContact, leadService } = await req.json() as {
+    sessionId: string
+    leadName: string
+    leadContact: string
+    leadService: string
   }
 
-  if (typeof body !== 'object' || body === null) {
-    return NextResponse.json({ error: 'Bad request.' }, { status: 400, headers: NO_STORE })
+  if (!sessionId || !leadName || !leadContact) {
+    return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
   }
 
-  const { sessionId, leadName, leadContact, leadService } = body as Record<string, unknown>
-
-  if (typeof sessionId !== 'string' || !SESSION_ID_RE.test(sessionId)) {
-    return NextResponse.json({ error: 'Invalid session.' }, { status: 400, headers: NO_STORE })
-  }
-  if (typeof leadName !== 'string' || leadName.trim().length === 0 || leadName.length > 120) {
-    return NextResponse.json({ error: 'Name is required.' }, { status: 400, headers: NO_STORE })
-  }
-  if (typeof leadContact !== 'string' || leadContact.trim().length === 0 || leadContact.length > 200) {
-    return NextResponse.json({ error: 'Contact is required.' }, { status: 400, headers: NO_STORE })
-  }
-  if (typeof leadService !== 'string' || leadService.trim().length === 0 || leadService.length > 500) {
-    return NextResponse.json({ error: 'Service is required.' }, { status: 400, headers: NO_STORE })
-  }
-
-  const db = getSupabase()
+  const db = getAdminClient()
   if (!db) {
-    return NextResponse.json({ error: 'Database not configured.' }, { status: 500, headers: NO_STORE })
+    // Supabase not configured — still let the WhatsApp handoff proceed
+    return NextResponse.json({ ok: true })
   }
 
+  // Upsert the conversation row with lead details
   const { error } = await db
     .from('conversations')
-    .upsert({
-      session_id: sessionId,
-      lead_name: leadName.trim(),
-      lead_contact: leadContact.trim(),
-      lead_service: leadService.trim(),
-      updated_at: new Date().toISOString(),
-    })
+    .upsert(
+      {
+        session_id: sessionId,
+        lead_name: leadName.trim(),
+        lead_contact: leadContact.trim(),
+        lead_service: leadService?.trim() ?? '',
+        status: 'new',
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'session_id' }
+    )
 
   if (error) {
-    return NextResponse.json({ error: 'Could not save lead details.' }, { status: 500, headers: NO_STORE })
+    console.error('Lead save error:', error.message)
+    // Still let the WhatsApp handoff proceed even if DB write fails
+    return NextResponse.json({ ok: true, warning: 'Lead details could not be saved.' })
   }
 
-  return NextResponse.json({ ok: true }, { headers: NO_STORE })
+  return NextResponse.json({ ok: true })
 }
